@@ -1,0 +1,102 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="wintersnowb2c.onmicrosoft.com" PolicyId="B2C_1A_TrueView_OIDC_SignIn"
+  PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn" TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97" DeploymentMode="Development"
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Connect_OIDC_SignIn</PolicyId>
+  </BasePolicy>
+
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <Domain>ecolabtest.com</Domain>
+      <DisplayName>EcolabTest</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-EcolabTest">
+          <DisplayName>Login with Ecolab Test (SAML)</DisplayName>
+          <Metadata>
+            <Item Key="PartnerEntity">https://login.microsoftonline.com/c51923de-e7e0-4fd0-91c6-4a3b2df79732/v2.0/.well-known/openid-configuration</Item>
+            <Item Key="IssuerUri">https://wintersnowb2c.b2clogin.com/wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <Domain>walmart.com</Domain>
+      <DisplayName>Walmart</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-Walmart">
+          <DisplayName>Login with Walmart (SAML)</DisplayName>
+          <Metadata>
+            <Item Key="PartnerEntity">https://pfedcert.wal-mart.com/pf/federation_metadata.ping?PartnerSpId=https://wintersnowb2c.b2clogin.com/wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn</Item>
+            <Item Key="IssuerUri">https://wintersnowb2c.b2clogin.com/wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <Domain>inspirebrands.com</Domain>
+      <DisplayName>InspireBrands</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-Inspire Brands">
+          <DisplayName>Login with InspireBrands (SAML)</DisplayName>
+          <Metadata>
+            <Item Key="PartnerEntity">https://inspire.oktapreview.com/app/exk28593nzl3F6H4T0h8/sso/saml/metadata</Item>
+            <Item Key="IssuerUri">https://wintersnowb2c.b2clogin.com/wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <Domain>hy-vee.com</Domain>
+      <DisplayName>Hy-Vee</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-Hy-Vee">
+          <DisplayName>Login with Hy-Vee (SAML)</DisplayName>
+          <Metadata>
+            <Item Key="PartnerEntity">https://hy-vee.okta.com/app/exkrmny8iqrIvMtre4x7/sso/saml/metadata</Item>
+            <Item Key="IssuerUri">https://wintersnowb2c.b2clogin.com/wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <Domain>truefoodkitchen.com</Domain>
+      <DisplayName>True Food Kitchen</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-TrueFoodKitchen">
+          <DisplayName>Login with True Food Kitchen (OIDC)</DisplayName>
+          <Metadata>
+            <Item Key="client_id">0oa1y26a7kTZiwVPv697</Item>
+            <Item Key="IdTokenAudience">0oa1y26a7kTZiwVPv697</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="client_secret" StorageReferenceId="B2C_1A_TrueFoodKitchenSecret" />
+          </CryptographicKeys>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <Domain>jerrysfoods.com</Domain>
+      <DisplayName>JerrysFoods</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-16-FederationPartner-JerrysFoods">
+          <DisplayName>Login with Jerry's Foods (SAML)</DisplayName>
+          <Metadata>
+            <Item Key="PartnerEntity">{Settings:FederationPartner-32-MetadataUrl-TrueView}</Item>
+            <Item Key="IssuerUri">{Settings:FederationPartner-32-IssuerUri-TrueView}</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+
+  </ClaimsProviders>
+</TrustFrameworkPolicy>

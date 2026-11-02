@@ -1,0 +1,6 @@
+{
+    "exclude": [
+        "B2C_1A_OIP_Signin_ToU",
+        "B2C_1A_EasyPay_OIDC_SignIn"
+    ]
+}

@@ -1,0 +1,36 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+  PolicySchemaVersion="0.3.0.0" 
+  TenantId="ecolabb2c.onmicrosoft.com" 
+  PolicyId="B2C_1A_Admin_Sign_Up" 
+  PublicPolicyUri="http://ecolabb2c.onmicrosoft.com/B2C_1A_Admin_Sign_Up" 
+  TenantObjectId="278a8e42-9a77-442c-899b-1e321202cd04" 
+  DeploymentMode="Development" 
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>ecolabb2c.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Connect_Extensions</PolicyId>
+  </BasePolicy>
+
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignUpFederated" />
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Absolute</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="70f1195e-9c7c-4140-a298-db527d357c99" DeveloperMode="false" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <ScriptExecution>Allow</ScriptExecution>
+    </UserJourneyBehaviors>
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="email"/>
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="email" ExcludeAsClaim="true" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

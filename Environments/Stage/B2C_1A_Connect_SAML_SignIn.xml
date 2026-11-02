@@ -1,0 +1,83 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="wintersnowb2c.onmicrosoft.com" PolicyId="B2C_1A_Connect_SAML_SignIn"
+  PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_Connect_SAML_SignIn" TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97" DeploymentMode="Development"
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Connect_Extensions</PolicyId>
+  </BasePolicy>
+
+  <!-- the SAML claims resolvers need to happen in this file because otherwise it throws an error for OIDC flows -->
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Utilities</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-02-Utilities-PolicyClaimsToClaimsBag">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="appEntityId" DefaultValue="{SAML:Issuer}" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+
+  <!-- overwrite the default token issuer for the user journey -->
+  <UserJourneys>
+    <UserJourney Id="SignIn" DefaultCpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer">
+    </UserJourney>
+  </UserJourneys>
+
+  <!-- update the actual token issuer in the subjourney -->
+  <SubJourneys>
+    <SubJourney Id="SubJourney-Final-IssueToken" Type="Transfer">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer" />
+      </OrchestrationSteps>
+    </SubJourney>
+  </SubJourneys>
+
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignIn" />
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Absolute</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="4c06f918-ec06-4809-aa8c-85420b29a9b2" DeveloperMode="true"
+        ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <JourneyFraming Enabled="true" Sources="https://app.onetrust.com" />
+      <ScriptExecution>Allow</ScriptExecution>
+    </UserJourneyBehaviors>
+
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="SAML2" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="email" />
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="emailaddress" />
+        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+        <OutputClaim ClaimTypeReferenceId="objectIdFromSession" />
+        <OutputClaim ClaimTypeReferenceId="PolicyId" />
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="objectId" />
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="sub" />
+
+        <OutputClaim ClaimTypeReferenceId="extension_IdP" PartnerClaimType="IdP" />
+        <OutputClaim ClaimTypeReferenceId="extension_isFederated" PartnerClaimType="isFederated" />
+        <OutputClaim ClaimTypeReferenceId="extension_isLocal" PartnerClaimType="isLocal" />
+        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" PartnerClaimType="isFirstTime" />
+        <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" PartnerClaimType="ManagedUsername" />
+        <OutputClaim ClaimTypeReferenceId="creationType" />
+        <OutputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+        <OutputClaim ClaimTypeReferenceId="displayName" />
+        <OutputClaim ClaimTypeReferenceId="givenName" />
+        <OutputClaim ClaimTypeReferenceId="surname" />
+        <OutputClaim ClaimTypeReferenceId="isConvertToWorkAccountFlow" />
+        <OutputClaim ClaimTypeReferenceId="isPasswordResetFlow" />
+
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="email" ExcludeAsClaim="true" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

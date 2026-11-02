@@ -1,0 +1,27 @@
+trigger:
+  branches:
+    include:
+      - stage
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  - task: PowerShell@2
+    displayName: 'Deploy policies to Stage B2C'
+    inputs:
+      filePath: 'scripts/DeployEnvironmentFolderToB2C.ps1'
+      arguments: >
+        -PathToFolder "$(Build.SourcesDirectory)/Environments/Stage"
+        -ClientId "$(B2C_CLIENT_ID)"
+        -ClientSecret "$(B2C_CLIENT_SECRET)"
+        -TenantId "$(B2C_TENANT_ID)"
+        -ConfigFile "$(Build.SourcesDirectory)/deploy-config.json"
+        -BackupPath "$(Build.ArtifactStagingDirectory)/backups"
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish policy backups'
+    condition: always()
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/backups'
+      artifactName: 'policy-backups-stage'

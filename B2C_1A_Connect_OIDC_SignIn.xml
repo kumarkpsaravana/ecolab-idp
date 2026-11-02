@@ -1,0 +1,94 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant-Name}" PolicyId="B2C_1A_{Settings:RP-OIDC-Policy-Name}"
+  PublicPolicyUri="http://{Settings:Tenant-Name}/B2C_1A_{Settings:RP-OIDC-Policy-Name}" TenantObjectId="{Settings:Tenant-ObjectId}" DeploymentMode="{Settings:ApplicationInsights-Deployment-Mode}"
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>{Settings:Tenant-Name}</TenantId>
+    <PolicyId>B2C_1A_{Settings:Extension-Policy-Name}</PolicyId>
+  </BasePolicy>
+  
+  <!-- overwrite the default token issuer for the user journey -->
+  <UserJourneys>
+    <UserJourney Id="SignIn" DefaultCpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-JwtIssuer">
+    </UserJourney>
+  </UserJourneys>
+
+  <!-- update the actual token issuer in the subjourney -->
+  <SubJourneys>
+    <SubJourney Id="SubJourney-Final-IssueToken" Type="Transfer">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-JwtIssuer" />
+      </OrchestrationSteps>
+    </SubJourney>
+  </SubJourneys>
+
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignIn" />
+    {Settings:UserInfoEndpoint}
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Absolute</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:ApplicationInsights-Instrumentation-Key}" DeveloperMode="{Settings:ApplicationInsights-Developer-Mode}"
+        ClientEnabled="{Settings:ApplicationInsights-Client-Enabled}" ServerEnabled="{Settings:ApplicationInsights-Server-Enabled}" TelemetryVersion="1.0.0" />
+      <ScriptExecution>Allow</ScriptExecution>
+    </UserJourneyBehaviors>
+
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="email" />
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="emailaddress" />
+        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+        <OutputClaim ClaimTypeReferenceId="objectIdFromSession" />
+        <OutputClaim ClaimTypeReferenceId="PolicyId" />
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="objectId" />
+        <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="sub" />
+
+        <OutputClaim ClaimTypeReferenceId="extension_IdP" PartnerClaimType="IdP" />
+        <OutputClaim ClaimTypeReferenceId="extension_isFederated" PartnerClaimType="isFederated" />
+        <OutputClaim ClaimTypeReferenceId="extension_isLocal" PartnerClaimType="isLocal" />
+        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" PartnerClaimType="isFirstTime" />
+        <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" PartnerClaimType="ManagedUsername" />
+        <OutputClaim ClaimTypeReferenceId="creationType" />
+        <OutputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+        <OutputClaim ClaimTypeReferenceId="displayName" />
+        <OutputClaim ClaimTypeReferenceId="givenName" />
+        <OutputClaim ClaimTypeReferenceId="surname" />
+        <OutputClaim ClaimTypeReferenceId="isConvertToWorkAccountFlow" />
+        <OutputClaim ClaimTypeReferenceId="isPasswordResetFlow" />
+        <OutputClaim ClaimTypeReferenceId="correlationId" DefaultValue="{Context:CorrelationId}"/>
+        <OutputClaim ClaimTypeReferenceId="sessionId" />
+
+        <!--superset of API input and output claims-->
+        <OutputClaim ClaimTypeReferenceId="jit_company" PartnerClaimType="company" />
+        <OutputClaim ClaimTypeReferenceId="jit_country" PartnerClaimType="country" />
+        <OutputClaim ClaimTypeReferenceId="jit_currency" PartnerClaimType="currency" />
+        <OutputClaim ClaimTypeReferenceId="jit_language" PartnerClaimType="language" />
+        <OutputClaim ClaimTypeReferenceId="jit_culture" PartnerClaimType="culture" />
+        <OutputClaim ClaimTypeReferenceId="jit_timezone" PartnerClaimType="timezone" />
+        <OutputClaim ClaimTypeReferenceId="jit_userkey" PartnerClaimType="userkey" />
+        <OutputClaim ClaimTypeReferenceId="jit_isHierarchyAlignedUser" PartnerClaimType="isHierarchyAlignedUser" />
+        <OutputClaim ClaimTypeReferenceId="jit_permissions" PartnerClaimType="permissions" />
+        <OutputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="externalid" />
+        <OutputClaim ClaimTypeReferenceId="jit_accountkey" PartnerClaimType="accountkey" />
+        <OutputClaim ClaimTypeReferenceId="jit_accountnumbers" PartnerClaimType="accountnumbers" />
+        <OutputClaim ClaimTypeReferenceId="jit_sourcesystemcode" PartnerClaimType="sourcesystemcode" />
+        <OutputClaim ClaimTypeReferenceId="jit_usertype" PartnerClaimType="usertype" />
+        <!-- <OutputClaim ClaimTypeReferenceId="jit_rolename" PartnerClaimType="rolename" /> -->
+        <OutputClaim ClaimTypeReferenceId="jit_unitnumber" PartnerClaimType="unitnumber"/>
+        <OutputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="alignmentType"/>
+        <OutputClaim ClaimTypeReferenceId="jit_siteUnitNumbers" PartnerClaimType="siteUnitNumbers"/>
+        <OutputClaim ClaimTypeReferenceId="jit_siteNames" PartnerClaimType="siteNames"/>
+        <OutputClaim ClaimTypeReferenceId="jit_graphNodeKeys" PartnerClaimType="graphNodeKeys"/>
+        <OutputClaim ClaimTypeReferenceId="isJitFlow" PartnerClaimType="isJitFlow" />
+
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="email" ExcludeAsClaim="true" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

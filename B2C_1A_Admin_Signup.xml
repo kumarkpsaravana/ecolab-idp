@@ -1,0 +1,36 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+  PolicySchemaVersion="0.3.0.0" 
+  TenantId="{Settings:Tenant-Name}" 
+  PolicyId="B2C_1A_{Settings:RP03-Policy-Name}" 
+  PublicPolicyUri="http://{Settings:Tenant-Name}/B2C_1A_{Settings:RP03-Policy-Name}" 
+  TenantObjectId="{Settings:Tenant-ObjectId}" 
+  DeploymentMode="{Settings:ApplicationInsights-Deployment-Mode}" 
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>{Settings:Tenant-Name}</TenantId>
+    <PolicyId>B2C_1A_{Settings:Extension-Policy-Name}</PolicyId>
+  </BasePolicy>
+
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignUpFederated" />
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Absolute</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:ApplicationInsights-Instrumentation-Key}" DeveloperMode="{Settings:ApplicationInsights-Developer-Mode}" ClientEnabled="{Settings:ApplicationInsights-Client-Enabled}" ServerEnabled="{Settings:ApplicationInsights-Server-Enabled}" TelemetryVersion="1.0.0" />
+      <ScriptExecution>Allow</ScriptExecution>
+    </UserJourneyBehaviors>
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="email"/>
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="email" ExcludeAsClaim="true" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

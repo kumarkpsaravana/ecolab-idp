@@ -1,0 +1,2906 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant-Name}" PolicyId="B2C_1A_{Settings:Extension-Policy-Name}"
+  PublicPolicyUri="http://{Settings:Tenant-Name}/B2C_1A_{Settings:Extension-Policy-Name}" TenantObjectId="{Settings:Tenant-ObjectId}">
+
+  <BasePolicy>
+    <TenantId>{Settings:Tenant-Name}</TenantId>
+    <PolicyId>B2C_1A_{Settings:LocalAuthPolicyName}</PolicyId>
+  </BasePolicy>
+
+  <BuildingBlocks>
+    <ClaimsSchema>
+
+      <ClaimType Id="foobar">
+        <DisplayName>not important</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <!-- FROM - https://docs.microsoft.com/en-us/azure/active-directory-b2c/custom-policy-password-complexity -->
+      <!-- The claim types newPassword and reenterPassword are considered special, please do not change the names. 
+           The UI validates that the user correctly re-entered their password during account creation based on these 
+           claim types.	  -->
+      <ClaimType Id="newPassword">
+        <DisplayName>New Password</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Enter new password</UserHelpText>
+        <UserInputType>Password</UserInputType>
+        <PredicateValidationReference Id="CustomPassword" />
+      </ClaimType>
+
+      <ClaimType Id="reenterPassword">
+        <DisplayName>Confirm New Password</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Confirm new password</UserHelpText>
+        <UserInputType>Password</UserInputType>
+        <PredicateValidationReference Id="CustomPassword" />
+      </ClaimType>
+
+      <ClaimType Id="email">
+        <DisplayName>Email Address</DisplayName>
+        <DataType>string</DataType>
+        <DefaultPartnerClaimTypes>
+          <Protocol Name="OAuth2" PartnerClaimType="email" />
+          <Protocol Name="OpenIdConnect" PartnerClaimType="email" />
+          <Protocol Name="SAML2" PartnerClaimType="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" />
+        </DefaultPartnerClaimTypes>
+        <UserHelpText>Email address that can be used to contact you.</UserHelpText>
+        <UserInputType>TextBox</UserInputType>
+        <Restriction>
+          <!-- <Pattern RegularExpression="^[a-zA-Z0-9.!#$%&amp;'^_`{}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$" HelpText="Please enter a valid email address." /> -->
+          <!-- From Frank's work - found in an MS B2C lower level policy file -->
+          <Pattern RegularExpression="^[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+(?:\.[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"
+            HelpText="Please enter a valid email address." />
+        </Restriction>
+      </ClaimType>
+
+      <ClaimType Id="errorMessage">
+        <DisplayName>Error Message</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Add help text here</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+
+      <!-- This is text for a custom error page when the federationId fails to match the signInName -->
+      <!-- the trick of using the claimType DisplayName to carry the text of the message is from -->
+      <!-- https://medium.com/the-new-control-plane/creating-an-error-page-for-an-azure-ad-b2c-custom-policy-flow-fb2692a3b50f -->
+      <ClaimType Id="FedIdMismatchErrorMessage">
+        <DisplayName>The username returned from the federated partner is not the same as the value provided during signin.</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Add help text here</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+
+      <ClaimType Id="UsernameNotFoundErrorMessage">
+        <DisplayName>The username entered is not registered in the system.</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Add help text here</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+
+      <ClaimType Id="started">
+        <DisplayName>Started</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <!-- Federation ID obtained from token -->
+      <ClaimType Id="federationId">
+        <DisplayName>Federation ID</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="domainHint">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="domainHintIsEmpty">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <!-- MCP -->
+      <ClaimType Id="mcpId">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="mcpIdIsEmpty">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="mcpRequestBody">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <!-- guids -->
+      <ClaimType Id="appId">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="appEntityId">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="sessionId">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <!-- used to output a value of False -->
+      <ClaimType Id="dummyfalse">
+        <DisplayName>Used to output a False</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="creationType">
+        <DisplayName>Creation Type</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+
+      <ClaimType Id="extension_isFederated">
+        <DisplayName>Indicates if user account is Federated</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_isLocal">
+        <DisplayName>Indicates if user account is Local</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_isFirstTime">
+        <DisplayName>Indicates if user is logging in for the first time</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_IdP">
+        <DisplayName>Name of IdP</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_ManagedUsername">
+        <DisplayName>Managed Username</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_AccountNumber">
+        <DisplayName>Account Number</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="sspr">
+        <DisplayName>SSPR</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="isSSPR">
+        <DisplayName>SSPR</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="signInName">
+        <DisplayName>Email address</DisplayName>
+        <UserHelpText>Email address to use for signing in.</UserHelpText>
+        <Restriction>
+          <!-- <Pattern RegularExpression="^[a-zA-Z0-9.!#$%&amp;'^_`{}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$" HelpText="Please enter a valid email address." /> -->
+          <!-- From Frank's work - found in an MS B2C lower level policy file -->
+          <Pattern RegularExpression="^[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+(?:\.[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"
+            HelpText="Please enter a valid email address." />
+          <!-- <Pattern RegularExpression="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$" HelpText="The email you provided is not valid." /> -->
+        </Restriction>
+      </ClaimType>
+
+      <ClaimType Id="preAuthObjectId">
+        <DisplayName>Pre-Auth Object ID</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="preAuthManagedUsername">
+        <DisplayName>Pre-Auth ManagedUsername</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="lowercaseManagedUsername">
+        <DisplayName>Lowercase ManagedUsername</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="preAuthAltFedID">
+        <DisplayName>Pre-Auth AltFedID</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="preAuthIDP">
+        <DisplayName>Pre-Auth IDP</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="identityProviders">
+        <DisplayName>IdentityProviders</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText>User identity providers</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="domainParameter">
+        <DisplayName>domainParameter</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>parsed domain value from url</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="knownDomain">
+        <DisplayName>knownDomain</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>if this a domain that is a customer</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="isKnownCustomer">
+        <DisplayName>knownDomain</DisplayName>
+        <DataType>boolean</DataType>
+        <UserHelpText>if this a domain that is a customer</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="dummytrue">
+        <DisplayName>dummy value for comparison</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+      </ClaimType>
+
+      <ClaimType Id="isPasswordResetFlow">
+        <DisplayName>Indicates whether user resetting the password</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Add help text here</AdminHelpText>
+      </ClaimType>
+
+      <ClaimType Id="isConvertToWorkAccountFlow">
+        <DisplayName>Indicates whether user is converting to work account</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Add help text here</AdminHelpText>
+      </ClaimType>
+
+      <ClaimType Id="extension_isEligibleToConvert">
+        <DisplayName>Indicates whether the user should be presented with an option to convert to a work account</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Add help text here</AdminHelpText>
+      </ClaimType>
+
+      <ClaimType Id="accountNumber">
+        <DisplayName>Account Number</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="accountNumbers">
+        <DisplayName>Account Numbers</DisplayName>
+        <DataType>stringCollection</DataType>
+      </ClaimType>
+
+      <ClaimType Id="EventType">
+        <DisplayName>Event type</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="EventTimestamp">
+        <DisplayName>Event timestamp</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="PolicyId">
+        <DisplayName>Policy Id</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="Culture">
+        <DisplayName>Culture ID</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="CorrelationId">
+        <DisplayName>Correlation Id</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="federatedUser">
+        <DisplayName>Federated user</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="parsedDomain">
+        <DisplayName>Domain name</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>The domain portion of the email address.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="userInLocalDirectory">
+        <DisplayName>userInLocalDirectory</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="bearerToken">
+        <DisplayName>Bearer token</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="grant_type">
+        <DisplayName>Grant type</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="scope">
+        <DisplayName>scope</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_AltFedID">
+        <DisplayName>The FederationID of the ADFS user</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_termsOfUseRequired">
+        <DisplayName>Terms of Use Consent Required</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>specifies if Terms of Use Consent is required or not which CDM can set</AdminHelpText>
+        <UserHelpText>specifies if Terms of Use Consent is required or not</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="B2CToURequired">
+        <DisplayName>Terms of Use Consent Required</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Boolean that specifies if Terms of Use Consent is required based on claims transformation </AdminHelpText>
+        <UserHelpText>specifies if Terms of Use Consent is required or not</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="extension_termsOfUseConsentVersion">
+        <DisplayName>Terms of Use Consent Version</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Terms of Use Consent Version.</AdminHelpText>
+        <UserHelpText>Terms of Use Consent Version.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="extension_UserTouVersion">
+        <DisplayName>Users Terms of Use Consent Version</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>The ToU version the User has previously accepted.</AdminHelpText>
+        <UserHelpText>Terms of Use Consent Version.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="extension_TermsOfUseAcceptedDate">
+        <DisplayName>Terms Of Use Accepted Date</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>The date of the most recent consent</AdminHelpText>
+        <UserHelpText>Terms of Use Accepted Date.</UserHelpText>
+      </ClaimType>
+
+      <!-- used to output the current version of for ToU -->
+      <ClaimType Id="CurrentToUVersion">
+        <DisplayName>used to output the current version of for ToU</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_termsOfUseConsentChoice">
+        <DisplayName></DisplayName>
+        <DataType>string</DataType>
+        <UserInputType>CheckboxMultiSelect</UserInputType>
+        <Restriction>
+          <Enumeration
+            Text="By clicking this checkbox, I hereby agree and consent to the Ecolab Terms."
+            Value="AgreeToTermsOfUseConsentYes" SelectByDefault="false" />
+        </Restriction>
+      </ClaimType>
+
+      <ClaimType Id="systemDateTime">
+        <DisplayName>Current Date time</DisplayName>
+        <DataType>dateTime</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_LastLoginDateTime">
+        <DisplayName>Last Login DateTime</DisplayName>
+        <DataType>dateTime</DataType>
+      </ClaimType>
+
+      <ClaimType Id="passwordExpired">
+        <DisplayName>Password Expired</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="extension_UsrType">
+        <DisplayName>User Type</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="siteName">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="siteKey">
+        <DataType>int</DataType>
+      </ClaimType>
+
+      <ClaimType Id="isMultiSiteUser">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <!-- claims returned by CDM JIT API -->
+      <ClaimType Id="allowJit">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="allowJitString">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="alignmentType">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="alignmentTypeRaw">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="isJitFlow">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_userkey">
+        <DataType>int</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_isHierarchyAlignedUser">
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_externalid">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_permissions">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_accountkey">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_accountnumbers">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_sourcesystemcode">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_usertype">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_siteUnitNumbers">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_siteNames">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="jit_graphNodeKeys">
+        <DataType>string</DataType>
+      </ClaimType>
+
+    </ClaimsSchema>
+
+    <Predicates>
+      <Predicate Id="LengthRange" Method="IsLengthRange">
+        <UserHelpText>The password must be between 8 and 64 characters.</UserHelpText>
+        <Parameters>
+          <Parameter Id="Minimum">8</Parameter>
+          <Parameter Id="Maximum">64</Parameter>
+        </Parameters>
+      </Predicate>
+
+      <Predicate Id="Lowercase" Method="IncludesCharacters">
+        <UserHelpText>a lowercase letter</UserHelpText>
+        <Parameters>
+          <Parameter Id="CharacterSet">a-z</Parameter>
+        </Parameters>
+      </Predicate>
+      <Predicate Id="Uppercase" Method="IncludesCharacters">
+        <UserHelpText>an uppercase letter</UserHelpText>
+        <Parameters>
+          <Parameter Id="CharacterSet">A-Z</Parameter>
+        </Parameters>
+      </Predicate>
+      <Predicate Id="Number" Method="IncludesCharacters">
+        <UserHelpText>a digit</UserHelpText>
+        <Parameters>
+          <Parameter Id="CharacterSet">0-9</Parameter>
+        </Parameters>
+      </Predicate>
+      <Predicate Id="Symbol" Method="IncludesCharacters">
+        <UserHelpText>a symbol</UserHelpText>
+        <Parameters>
+          <Parameter Id="CharacterSet">@#$%^&amp;*\-_+=[]{}|\\:',.?/`~"();!</Parameter>
+        </Parameters>
+      </Predicate>
+    </Predicates>
+
+    <PredicateValidations>
+      <PredicateValidation Id="CustomPassword">
+        <PredicateGroups>
+          <PredicateGroup Id="LengthGroup">
+            <PredicateReferences MatchAtLeast="1">
+              <PredicateReference Id="LengthRange" />
+            </PredicateReferences>
+          </PredicateGroup>
+          <PredicateGroup Id="CharacterClasses">
+            <UserHelpText>The password must have at least 3 of the following:</UserHelpText>
+            <PredicateReferences MatchAtLeast="3">
+              <PredicateReference Id="Lowercase" />
+              <PredicateReference Id="Uppercase" />
+              <PredicateReference Id="Number" />
+              <PredicateReference Id="Symbol" />
+            </PredicateReferences>
+          </PredicateGroup>
+        </PredicateGroups>
+      </PredicateValidation>
+    </PredicateValidations>
+
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateFedIdMismatchErrorMessage" TransformationMethod="FormatStringMultipleClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="federationId" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0} is not {1} Signin cannot be completed." />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="FedIdMismatchErrorMessage" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CreateUsernameNotFoundErrorMessage" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="Signin cannot be completed." />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="errorMessage" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CompareSSPRwithTrue" TransformationMethod="CompareClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="sspr" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="dummytrue" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="isSSPR" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+
+      <!-- if sspr is True OR isFirstTIme is True return True-->
+      <ClaimsTransformation Id="CheckIfSSPRisTrueOrIsFirstTimeIsTrue" TransformationMethod="OrClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="isSSPR" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- if isEligibleToConvert is True OR isKnownCustomer is True return True-->
+      <ClaimsTransformation Id="CheckIfisKnownCustomerIsTrueOrIsEligibleToConvertIsTrue" TransformationMethod="OrClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="isKnownCustomer" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CopySignInNameToReadOnly" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CopySignInNameToEmail" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="Email" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CopyDomainHintToIDP" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainHint" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="preAuthIDP" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CheckDomainHintIsEmpty" TransformationMethod="CompareClaimToValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainHint" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="compareTo" DataType="string" Value="" />
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="domainHintIsEmpty" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CheckMCPIdIsEmpty" TransformationMethod="CompareClaimToValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="mcpId" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="compareTo" DataType="string" Value="" />
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="mcpIdIsEmpty" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="AllowJitStringToBoolean" TransformationMethod="CompareClaimToValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="allowJitString" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <!-- case-insensitive compare to literal 'true' -->
+          <InputParameter Id="compareTo" DataType="string" Value="true" />
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="allowJit" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="AlignmentTypeToUpper" TransformationMethod="ChangeCase">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="alignmentTypeRaw" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+      <InputParameters>
+        <InputParameter Id="toCase" DataType="string" Value="UPPER" />
+      </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="alignmentType" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- Gets the domain portion of the sign-in email address-->
+      <ClaimsTransformation Id="ParseDomain" TransformationMethod="ParseDomain">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="emailAddress" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="domainParameter" TransformationClaimType="domain" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="DomainLookup" TransformationMethod="LookupValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainParameter" TransformationClaimType="inputParameterId" />
+        </InputClaims>
+        <InputParameters>
+          <!-- add domain suffixes to this list to offer returning local accounts the option to convert to a work account -->
+          <!-- <InputParameter Id="ecolab.com" DataType="string" Value="true" /> -->
+          <InputParameter Id="errorOnFailedLookup" DataType="boolean" Value="false" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="knownDomain" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CheckDomainParameterValue" TransformationMethod="CompareClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="knownDomain" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="dummytrue" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="isKnownCustomer" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="ChangeLowercaseManagedUsernameToLower" TransformationMethod="ChangeCase">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="lowercaseManagedUsername" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="toCase" DataType="string" Value="LOWER" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- This OR IsTermsOfUseConsentRequiredForDateTime check can be used to check if user need to see the ToU -->
+      <ClaimsTransformation Id="IsTermsOfUseConsentRequiredForVersion" TransformationMethod="CompareClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentVersion" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="CurrentToUVersion" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="not equal" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="B2CToURequired" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- gets the current time and stores it in a variable-->
+      <ClaimsTransformation Id="GetSystemDateTime" TransformationMethod="GetCurrentDateTime">
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="systemDateTime" TransformationClaimType="currentDateTime" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- compares the last password changed date time to the current date time -->
+      <!--https://docs.microsoft.com/en-us/azure/active-directory-b2c/date-transformations#datetimecomparison-->
+      <ClaimsTransformation Id="CompareLastLoginDateWithCurrentDateTime" TransformationMethod="DateTimeComparison">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="systemDateTime" TransformationClaimType="firstDateTime" />
+          <InputClaim ClaimTypeReferenceId="extension_LastLoginDateTime" TransformationClaimType="secondDateTime" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="later than" />
+          <InputParameter Id="timeSpanInSeconds" DataType="int" Value="-7776000" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="passwordExpired" TransformationClaimType="result" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- if the password is expired or its actually first time, set is first time to true -->
+      <ClaimsTransformation Id="CheckIfIsFirstTimeOrPasswordExpired" TransformationMethod="OrClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="passwordExpired" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="ConvertAccountNumbersStringCollectionToCommaDelimiterString" TransformationMethod="StringJoin">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="accountNumbers" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter DataType="string" Id="delimiter" Value="," />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="accountNumber" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+
+      <ClaimsTransformation Id="GenerateMCPRequestBody" TransformationMethod="GenerateJson">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="user.identities.emailAddress" />
+          <InputClaim ClaimTypeReferenceId="mcpId" TransformationClaimType="user.anonymousId" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="interaction.name" DataType="string" Value="B2C Login Event" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="mcpRequestBody" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="GenerateSessionId" TransformationMethod="CreateRandomString">
+        <InputParameters>
+          <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="sessionId" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+    </ClaimsTransformations>
+
+    <ContentDefinitions>
+      <ContentDefinition Id="api.error">
+        <LoadUri>~/tenant/templates/AzureBlue/exception.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:globalexception:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Error page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.idpselections">
+        <LoadUri>~/tenant/templates/AzureBlue/idpSelector.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Idp selection page</Item>
+          <Item Key="language.intro">Sign in</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.idpselections.signup">
+        <LoadUri>~/tenant/templates/AzureBlue/idpSelector.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Idp selection page</Item>
+          <Item Key="language.intro">Sign up</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.signuporsignin">
+        <!-- <LoadUri>~/tenant/templates/AzureBlue/unified.cshtml</LoadUri> -->
+        <LoadUri>{Settings:LoadUri.api.enterPassword}</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Signin and Signup</Item>
+          <Item Key="setting.forgotPasswordLinkLocation ">None</Item>
+        </Metadata>
+        <LocalizedResourcesReferences MergeBehavior="Prepend">
+          <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
+          <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.signuporsignin.es" />
+          <LocalizedResourcesReference Language="fr" LocalizedResourcesReferenceId="api.signuporsignin.fr" />
+          <LocalizedResourcesReference Language="fr-ca" LocalizedResourcesReferenceId="api.signuporsignin.fr-ca" />
+          <LocalizedResourcesReference Language="bg" LocalizedResourcesReferenceId="api.signuporsignin.bg" />
+        </LocalizedResourcesReferences>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted">
+        <!-- <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri> -->
+        <LoadUri>{Settings:LoadUri.api.enterUsername}</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+        <LocalizedResourcesReferences MergeBehavior="Prepend">
+          <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.en" />
+          <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.selfasserted.es" />
+          <LocalizedResourcesReference Language="fr" LocalizedResourcesReferenceId="api.selfasserted.fr" />
+          <LocalizedResourcesReference Language="fr-ca" LocalizedResourcesReferenceId="api.selfasserted.fr-ca" />
+          <LocalizedResourcesReference Language="bg" LocalizedResourcesReferenceId="api.selfasserted.bg" />
+        </LocalizedResourcesReferences>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted.profileupdate">
+        <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountsignup">
+        <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+        <!--<LoadUri>{Settings:LoadUri.api.selfAsserted}</LoadUri>-->
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account sign up page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountpasswordreset">
+        <!-- <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri> -->
+        <LoadUri>{Settings:LoadUri.api.createPassword}</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account change password page</Item>
+        </Metadata>
+        <LocalizedResourcesReferences MergeBehavior="Prepend">
+          <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.localaccountpasswordreset.en" />
+          <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.localaccountpasswordreset.es" />
+          <LocalizedResourcesReference Language="fr" LocalizedResourcesReferenceId="api.localaccountpasswordreset.fr" />
+          <LocalizedResourcesReference Language="fr-ca" LocalizedResourcesReferenceId="api.localaccountpasswordreset.fr-ca" />
+          <LocalizedResourcesReference Language="bg" LocalizedResourcesReferenceId="api.localaccountpasswordreset.bg" />
+        </LocalizedResourcesReferences>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.verifyemail">
+        <LoadUri>{Settings:LoadUri.api.verifyEmail}</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.9</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account change password page</Item>
+        </Metadata>
+        <LocalizedResourcesReferences MergeBehavior="Prepend">
+          <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.verifyemail.en" />
+          <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.verifyemail.es" />
+          <LocalizedResourcesReference Language="fr" LocalizedResourcesReferenceId="api.verifyemail.fr" />
+          <LocalizedResourcesReference Language="fr-ca" LocalizedResourcesReferenceId="api.verifyemail.fr-ca" />
+          <LocalizedResourcesReference Language="bg" LocalizedResourcesReferenceId="api.verifyemail.bg" />
+        </LocalizedResourcesReferences>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.TermsofUse">
+        <LoadUri>{Settings:LoadUri.api.TermsofUse}</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+    </ContentDefinitions>
+
+    <Localization Enabled="true">
+      <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+        <SupportedLanguage>en</SupportedLanguage>
+        <SupportedLanguage>es</SupportedLanguage>
+        <SupportedLanguage>fr</SupportedLanguage>
+        <SupportedLanguage>fr-ca</SupportedLanguage>
+        <SupportedLanguage>bg</SupportedLanguage>
+      </SupportedLanguages>
+
+      <!-- ENTER USERNAME PAGE-->
+
+      <LocalizedResources Id="api.selfasserted.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Enter email address</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Username for signing in</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="PatternHelpText">Please enter a valid email address.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">The password entry fields do not match. Please enter the same password in both fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">A required field is missing. Please fill out all required fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">What is this?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Please log in to your account</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Please wait</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">This information is required.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">We cannot find this username or email address.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.selfasserted.es">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Ingrese su correo electrónico</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nombre de usuario para iniciar sesión</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="PatternHelpText">Introduzca una dirección de correo electrónico válida.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuar</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Uno o más campos se rellenan incorrectamente. Comprueba tus entradas e inténtalo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Los campos de entrada de contraseña no coinciden. Introduzca la misma contraseña en ambos campos e inténtelo
+            de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Falta un campo obligatorio. Rellene todos los campos obligatorios e inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">¿Qué es esto??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Inicia sesión</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Espera</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Esta información es obligatoria.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Hay demasiadas solicitudes en este momento. Espere un tiempo e inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">No podemos encontrar este nombre de usuario o dirección de correo electrónico.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.selfasserted.fr">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez le nom d’utilisateur ou l’adresse e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="PatternHelpText">Veuillez saisir une adresse e-mail valide.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs de saisie du mot de passe ne correspondent pas. Entrez le même mot de passe dans les deux champs et
+            réessayez.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Un champ obligatoire est manquant. Veuillez remplir tous les champs obligatoires et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">Qu’est-ce que c est??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Connexion</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Veuillez patienter</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Ces informations sont requises.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez patienter un certain temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.selfasserted.fr-ca">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez nom d’utilisateur ou e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="PatternHelpText">Veuillez saisir une adresse e-mail valide.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs d’entrée de mot de passe ne correspondent pas. Veuillez entrer le même mot de passe dans les deux
+            champs et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Il manque un champ obligatoire. Veuillez remplir tous les champs obligatoires et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">C’est quoi ça??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Se connecter</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">S’il te plaît attends</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Cette information est requise.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez attendre un peu de temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.selfasserted.bg">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">###Enter Username or Email</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">###Username for signing in</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="PatternHelpText">###Please enter a valid email address.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">###Continue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">###One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">#The password entry fields do not match. Please enter the same password in both fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">###A required field is missing. Please fill out all required fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">#What is this?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">###Sign In</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">#Please wait</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">#This information is required.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">#There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">###We cannot find this username or email address.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <!-- ENTER PASSWORD PAGE-->
+
+      <LocalizedResources Id="api.signuporsignin.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="password">Enter password</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_signin">Log in</LocalizedString>
+          <LocalizedString ElementType="ClaimsProvider" StringId="SSPR">Forgot your password?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="local_intro_email">Welcome</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">The password you have entered is incorrect.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">We can't seem to find your account.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">Looks like you used an old password.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Invalid username or password.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">Your account has been locked. Contact your support person to unlock it, then try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">Your account is temporarily locked to prevent unauthorized use. Try again later.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.signuporsignin.es">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="password">Contraseña</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_signin">Inicia sesión</LocalizedString>
+          <LocalizedString ElementType="ClaimsProvider" StringId="SSPR">¿Ha olvidado su contraseña??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="local_intro_email">Bienvenido</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Su contraseña es incorrecta.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Parece que no podemos encontrar tu cuenta.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">Parece que usaste una contraseña antigua.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Nombre de usuario o contraseña no válidos.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">Su cuenta ha sido bloqueada. Ponte en contacto con tu persona de soporte técnico para desbloquearlo y,
+            a continuación, inténtalo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">Su cuenta está bloqueada temporalmente para evitar el uso no autorizado. Inténtelo de nuevo más tarde.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">Hay demasiadas solicitudes en este momento. Espere un tiempo e inténtelo de nuevo.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.signuporsignin.fr">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="password">Mot de passe</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_signin">Connexion</LocalizedString>
+          <LocalizedString ElementType="ClaimsProvider" StringId="SSPR">Vous avez oublié votre mot de passe??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="local_intro_email">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Votre mot de passe est incorrect.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous n’avons pas l’air de trouver votre compte.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">On dirait que vous avez utilisé un ancien mot de passe.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Nom d’utilisateur ou mot de passe non valide.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">Votre compte a été verrouillé. Contactez votre personne d’assistance pour le déverrouiller, puis
+            réessayez.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">Votre compte est temporairement verrouillé pour empêcher toute utilisation non autorisée. Réessayez plus
+            tard.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">Il y a trop de demandes en ce moment. Veuillez patienter un certain temps et réessayer.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.signuporsignin.fr-ca">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="password">Mot de passe</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_signin">Se connecter</LocalizedString>
+          <LocalizedString ElementType="ClaimsProvider" StringId="SSPR">Vous avez oublié votre mot de passe??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="local_intro_email">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Votre mot de passe est incorrect.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous n’avons pas l’air de trouver votre compte.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">On dirait que vous avez utilisé un ancien mot de passe.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Nom d’utilisateur ou mot de passe non valide.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">Votre compte a été verrouillé. Contactez votre personne de soutien pour le déverrouiller, puis
+            réessayez.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">Votre compte est temporairement verrouillé pour empêcher toute utilisation non autorisée. Réessayez plus
+            tard.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">Il y a trop de demandes en ce moment. Veuillez attendre un peu de temps et réessayer.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.signuporsignin.bg">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="password">###Password</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_signin">###Sign in</LocalizedString>
+          <LocalizedString ElementType="ClaimsProvider" StringId="SSPR">###Forgot your password?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="local_intro_email">###Welcome</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">###Please enter a correct password.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">#We can't seem to find your account.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">###Looks like you used an old password.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">#Invalid username or password.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">###Your account has been locked. Contact your support person to unlock it, then try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">###Your account is temporarily locked to prevent unauthorized use. Try again later.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">###There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <!-- VERIFY EMAIL PAGE-->
+
+      <LocalizedResources Id="api.verifyemail.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Enter Username or Email</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Username for signing in</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">The password entry fields do not match. Please enter the same password in both fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">A required field is missing. Please fill out all required fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">What is this?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Welcome</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Please wait</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">This information is required.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Change e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Resend Code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Send verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Verify code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">That code is expired. Please request a new code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">You've made too many incorrect attempts. Please try again later.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Please enter the correct verification code or click "Resend Code" to generate a new one.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_server">We are having trouble verifying your email address. Please enter a valid email address and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">There have been too many requests to verify this email address. Please wait a while, then try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">A verification code has been successfully sent to your email.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Verification code</LocalizedString>
+          <!-- <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Please click "Send Verification Code" to receive a verification code via email.</LocalizedString> -->
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">We need to verify your email address. Click "Send Verification Code" to receive a verification code via email. </LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Your email has been verified.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">A user with the specified ID already exists. Please choose a different one.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">We cannot find this username or email address.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.verifyemail.es">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Ingrese su correo electrónico</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nombre de usuario para iniciar sesión</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuar</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Uno o más campos se rellenan incorrectamente. Comprueba tus entradas e inténtalo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Los campos de entrada de contraseña no coinciden. Introduzca la misma contraseña en ambos campos e inténtelo
+            de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Falta un campo obligatorio. Rellene todos los campos obligatorios e inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">¿Qué es esto??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenido</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Espera</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Esta información es obligatoria.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Cambiar correo electrónico</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Enviar nuevo código</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Enviar código de verificación</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Verificar código</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ese código ha caducado. Por favor, solicite un nuevo código.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Has hecho demasiados intentos incorrectos. Inténtelo de nuevo más tarde.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ese código es incorrecto. Inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_server">Estamos teniendo problemas para verificar su dirección de correo electrónico. Introduce una dirección de correo
+            electrónico válida e inténtalo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Ha habido demasiadas solicitudes para verificar esta dirección de correo electrónico. Espere un momento y vuelva a
+            intentarlo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">El código de verificación se ha enviado a su bandeja de entrada. Por favor, cópielo en el cuadro de entrada a continuación.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Código de verificación</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Necesitamos verificar su correo electrónico. Despues de ingresar su correo electrónico, por favor, haga clic en el botón
+            "Enviar Código de Verificación" para recibir el código.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Dirección de correo electrónico verificada. Ahora puede continuar.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Hay demasiadas solicitudes en este momento. Espere un tiempo e inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">Ya existe un usuario con el ID especificado. Por favor, elija uno diferente.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">No podemos encontrar este nombre de usuario o dirección de correo electrónico.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.verifyemail.fr">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez le nom d’utilisateur ou l’adresse e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs de saisie du mot de passe ne correspondent pas. Entrez le même mot de passe dans les deux champs et
+            réessayez.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Un champ obligatoire est manquant. Veuillez remplir tous les champs obligatoires et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">Qu’est-ce que c est??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Veuillez patienter</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Ces informations sont requises.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Modifier l’e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Envoyer un nouveau code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Envoyer le code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Vérifier le code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ce code a expiré. Veuillez demander un nouveau code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Vous avez fait trop de tentatives incorrectes. Veuillez réessayer plus tard.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ce code est incorrect. Veuillez réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_server">Nous avons du mal à vérifier votre adresse e-mail. Entrez une adresse e-mail valide et réessayez.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Il y a eu trop de demandes pour vérifier cette adresse e-mail. Veuillez patienter un moment, puis réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">Le code de vérification a été envoyé à votre boîte de réception. Veuillez le copier dans la zone de saisie ci-dessous.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Une vérification est nécessaire. Veuillez cliquer sur le bouton Envoyer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Adresse e-mail vérifiée. Vous pouvez maintenant continuer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez patienter un certain temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">Un utilisateur avec l’ID spécifié existe déjà. Veuillez en choisir un autre.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.verifyemail.fr-ca">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez nom d’utilisateur ou e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs d’entrée de mot de passe ne correspondent pas. Veuillez entrer le même mot de passe dans les deux
+            champs et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">Il manque un champ obligatoire. Veuillez remplir tous les champs obligatoires et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">C’est quoi ça??</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">S’il te plaît attends</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Cette information est requise.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Modifier le courrier électronique</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Envoyer un nouveau code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Envoyer un code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Vérifier le code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ce code a expiré. Veuillez demander un nouveau code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Vous avez fait trop de tentatives incorrectes. Veuillez réessayer plus tard.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ce code est incorrect. Veuillez réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_server">Nous avons du mal à vérifier votre adresse e-mail. Veuillez saisir une adresse e-mail valide et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Il y a eu trop de demandes pour vérifier cette adresse e-mail. Veuillez attendre un moment, puis réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">Le code de vérification a été envoyé à votre boîte de réception. Veuillez le copier dans la boîte de saisie ci-dessous.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">La vérification est nécessaire. Veuillez cliquer sur le bouton Envoyer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Adresse e-mail vérifiée. Vous pouvez maintenant continuer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez attendre un peu de temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">Un utilisateur avec l’ID spécifié existe déjà. Veuillez en choisir un autre.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+
+      <LocalizedResources Id="api.verifyemail.bg">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">###Enter Username or Email</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">###Username for signing in</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">###Continue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">#One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">#The password entry fields do not match. Please enter the same password in both fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">#A required field is missing. Please fill out all required fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="helplink_text">#What is this?</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">###Welcome</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">#Please wait</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">###This information is required.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">#Change e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">###Send new code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">###Send verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">###Verify code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">###That code is expired. Please request a new code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">###You've made too many incorrect attempts. Please try again later.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">###That code is incorrect. Please try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_server">#We are having trouble verifying your email address. Please enter a valid email address and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">#There have been too many requests to verify this email address. Please wait a while, then try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">###Verification code has been successfully sent to your email.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">###Verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">###Verification is necessary. Please click Send button.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">###E-mail address verified. You can now continue.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">#There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimNotVerified">#Claim not verified: {0}</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">#A user with the specified ID already exists. Please choose a different one.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">###We cannot find this username or email address.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfIncorrectPattern">#Incorrect pattern for: {0}</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidInput">#{0} has invalid input.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfMissingRequiredElement">#Missing required element: {0}</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfValidationError">#Error in validation by: {0}</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <!-- CREATE PASSWORD PAGE-->
+
+      <LocalizedResources Id="api.localaccountpasswordreset.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="DisplayName">New Password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="UserHelpText">Enter new password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="DisplayName">Confirm New Password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="UserHelpText">Confirm new password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Enter Username or Email</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Username for signing in</LocalizedString>
+          <LocalizedString ElementType="InputValidation" ElementId="CustomPassword" StringId="CharacterClasses">The password must have at least 3 of the following:</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="LengthRange" StringId="HelpText">The password must be between 8 and 64 characters.</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Lowercase" StringId="HelpText">a lowercase letter</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Uppercase" StringId="HelpText">an uppercase letter</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Number" StringId="HelpText">a digit</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Symbol" StringId="HelpText">a symbol</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Submit</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">New Password and Confirm Password should be same</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Set Password</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Please wait</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">This information is required.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Change e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Send new code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Send verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Verify code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">That code is expired. Please request a new code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">You've made too many incorrect attempts. Please try again later.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">That code is incorrect. Please try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">There have been too many requests to verify this email address. Please wait a while, then try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">Verification code has been sent to your inbox. Please copy it to the input box below.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Verification is necessary. Please click Send button.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">E-mail address verified. You can now continue.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">We cannot find this username or email address.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.localaccountpasswordreset.es">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="DisplayName">Nueva contraseña</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="UserHelpText">Introduzca una nueva contraseña</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="DisplayName">Confirmar nueva contraseña</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="UserHelpText">Confirmar nueva contraseña</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Ingrese su correo electrónico</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nombre de usuario para iniciar sesión</LocalizedString>
+          <LocalizedString ElementType="InputValidation" ElementId="CustomPassword" StringId="CharacterClasses">La contraseña debe tener al menos 3 de los siguientes:</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="LengthRange" StringId="HelpText">La contraseña debe tener entre 6 y 64 caracteres.</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Lowercase" StringId="HelpText">una letra minúscula</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Uppercase" StringId="HelpText">una letra mayúscula</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Number" StringId="HelpText">un dígito</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Symbol" StringId="HelpText">un símbolo</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuar</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Uno o más campos se rellenan incorrectamente. Comprueba tus entradas e inténtalo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Los campos de entrada de contraseña no coinciden. Introduzca la misma contraseña en ambos campos e inténtelo
+            de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenido</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Espera</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Esta información es obligatoria.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Cambiar correo electrónico</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Enviar nuevo código</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Enviar código de verificación</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Verificar código</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ese código ha caducado. Por favor, solicite un nuevo código.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Has hecho demasiados intentos incorrectos. Inténtelo de nuevo más tarde.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ese código es incorrecto. Inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Ha habido demasiadas solicitudes para verificar esta dirección de correo electrónico. Espere un momento y vuelva a
+            intentarlo.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">El código de verificación se ha enviado a su bandeja de entrada. Por favor, cópielo en el cuadro de entrada a continuación.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Código de verificación</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Necesitamos verificar su correo electrónico. Despues de ingresar su correo electrónico, por favor, haga clic en el botón
+            "Enviar Código de Verificación" para recibir el código.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Dirección de correo electrónico verificada. Ahora puede continuar.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Hay demasiadas solicitudes en este momento. Espere un tiempo e inténtelo de nuevo.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">No podemos encontrar este nombre de usuario o dirección de correo electrónico.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.localaccountpasswordreset.fr">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="DisplayName">Nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="UserHelpText">Entrez un nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="DisplayName">Confirmer le nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="UserHelpText">Confirmer le nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez le nom d’utilisateur ou l’adresse e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="InputValidation" ElementId="CustomPassword" StringId="CharacterClasses">Le mot de passe doit comporter au moins 3 des éléments suivants :</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="LengthRange" StringId="HelpText">Le mot de passe doit être compris entre 6 et 64 caractères.</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Lowercase" StringId="HelpText">une lettre minuscule</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Uppercase" StringId="HelpText">une lettre majuscule</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Number" StringId="HelpText">un chiffre</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Symbol" StringId="HelpText">un symbole</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs de saisie du mot de passe ne correspondent pas. Entrez le même mot de passe dans les deux champs et
+            réessayez.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">Veuillez patienter</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Ces informations sont requises.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Modifier l’e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Envoyer un nouveau code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Envoyer le code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Vérifier le code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ce code a expiré. Veuillez demander un nouveau code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Vous avez fait trop de tentatives incorrectes. Veuillez réessayer plus tard.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ce code est incorrect. Veuillez réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Il y a eu trop de demandes pour vérifier cette adresse e-mail. Veuillez patienter un moment, puis réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">Le code de vérification a été envoyé à votre boîte de réception. Veuillez le copier dans la zone de saisie ci-dessous.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">Une vérification est nécessaire. Veuillez cliquer sur le bouton Envoyer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Adresse e-mail vérifiée. Vous pouvez maintenant continuer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez patienter un certain temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+      <LocalizedResources Id="api.localaccountpasswordreset.fr-ca">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="DisplayName">Nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="UserHelpText">Entrez un nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="DisplayName">Confirmer le nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="UserHelpText">Confirmer le nouveau mot de passe</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Entrez nom d’utilisateur ou e-mail</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Nom d’utilisateur pour la connexion</LocalizedString>
+          <LocalizedString ElementType="InputValidation" ElementId="CustomPassword" StringId="CharacterClasses">Le mot de passe doit avoir au moins 3 des éléments suivants :</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="LengthRange" StringId="HelpText">Le mot de passe doit être compris entre 6 et 64 caractères.</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Lowercase" StringId="HelpText">une lettre minuscule</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Uppercase" StringId="HelpText">une lettre majuscule</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Number" StringId="HelpText">un chiffre</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Symbol" StringId="HelpText">un symbole</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">Continuer</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">Un ou plusieurs champs sont mal remplis. Veuillez vérifier vos entrées et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">Les champs d’entrée de mot de passe ne correspondent pas. Veuillez entrer le même mot de passe dans les deux
+            champs et réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Bienvenue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="preloader_alt">S’il te plaît attends</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">Cette information est requise.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">Modifier le courrier électronique</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">Envoyer un nouveau code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">Envoyer un code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">Vérifier le code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">Ce code a expiré. Veuillez demander un nouveau code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">Vous avez fait trop de tentatives incorrectes. Veuillez réessayer plus tard.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">Ce code est incorrect. Veuillez réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">Il y a eu trop de demandes pour vérifier cette adresse e-mail. Veuillez attendre un moment, puis réessayer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">Le code de vérification a été envoyé à votre boîte de réception. Veuillez le copier dans la boîte de saisie ci-dessous.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">Code de vérification</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">La vérification est nécessaire. Veuillez cliquer sur le bouton Envoyer.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">Adresse e-mail vérifiée. Vous pouvez maintenant continuer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">Il y a trop de demandes en ce moment. Veuillez attendre un peu de temps et réessayer.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Nous ne trouvons pas ce nom d’utilisateur ou cette adresse e-mail.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+
+      <LocalizedResources Id="api.localaccountpasswordreset.bg">
+        <LocalizedStrings>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="DisplayName">###New Password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="newPassword" StringId="UserHelpText">###Enter new password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="DisplayName">###Confirm New Password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="reenterPassword" StringId="UserHelpText">###Confirm new password</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">###Enter Username or Email</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">###Username for signing in</LocalizedString>
+          <LocalizedString ElementType="InputValidation" ElementId="CustomPassword" StringId="CharacterClasses">###The password must have at least 3 of the following:</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="LengthRange" StringId="HelpText">###The password must be between 8 and 64 characters.</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Lowercase" StringId="HelpText">###a lowercase letter</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Uppercase" StringId="HelpText">###an uppercase letter</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Number" StringId="HelpText">###a digit</LocalizedString>
+          <LocalizedString ElementType="Predicate" ElementId="Symbol" StringId="HelpText">###a symbol</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="button_continue">###Continue</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">###One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_passwordEntryMismatch">###The password entry fields do not match. Please enter the same password in both fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="error_requiredFieldMissing">#A required field is missing. Please fill out all required fields and try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">###Welcome</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="required_field">###This information is required.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_edit">#Change e-mail</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_resend">#Send new code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_send">###Send verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_but_verify">###Verify code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_code_expired">###That code is expired. Please request a new code.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_no_retry">###You've made too many incorrect attempts. Please try again later.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_retry">###That code is incorrect. Please try again.</LocalizedString>
+          <!-- <LocalizedString ElementType="UxElement" StringId="ver_fail_server">#We are having trouble verifying your email address. Please enter a valid email address and try
+          again.</LocalizedString> -->
+          <LocalizedString ElementType="UxElement" StringId="ver_fail_throttled">###There have been too many requests to verify this email address. Please wait a while, then try again.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_info_msg">###Verification code has been sent to your inbox. Please copy it to the input box below.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_input">###Verification code</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_intro_msg">###Verification is necessary. Please click Send button.</LocalizedString>
+          <LocalizedString ElementType="UxElement" StringId="ver_success_msg">###E-mail address verified. You can now continue.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="ServiceThrottled">#There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimNotVerified">#Claim not verified: {0}</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalAlreadyExists">#A user with the specified ID already exists. Please choose a different one.</LocalizedString>
+          <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">###We cannot find this username or email address.</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
+    </Localization>
+
+  </BuildingBlocks>
+
+  <ClaimsProviders>
+
+    <ClaimsProvider>
+      <DisplayName>Session Management</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SM-AAD">
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="sessionId" />
+          </PersistedClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <!-- This app insights block determines which properties get logged into application insights -->
+      <DisplayName>Application Insights</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="AppInsights-Common">
+          <DisplayName>Application Insights</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="InstrumentationKey">{Settings:ApplicationInsights-Instrumentation-Key}</Item>
+            <Item Key="DeveloperMode">false</Item>
+            <Item Key="DisableTelemetry ">false</Item>
+          </Metadata>
+          <InputClaims>
+            <!-- Properties of an event are added through the syntax {property:NAME}, where NAME is property being added to the event. DefaultValue can be either a static value or a value that's
+            resolved by one of the supported DefaultClaimResolvers. -->
+            <InputClaim ClaimTypeReferenceId="EventTimestamp" PartnerClaimType="{property:EventTimestamp}" DefaultValue="{Context:DateTimeInUtc}" />
+            <InputClaim ClaimTypeReferenceId="PolicyId" PartnerClaimType="{property:PolicyId}" DefaultValue="{Policy:PolicyId}" />
+            <InputClaim ClaimTypeReferenceId="CorrelationId" PartnerClaimType="{property:CorrelationId}" DefaultValue="{Context:CorrelationId}" />
+            <InputClaim ClaimTypeReferenceId="sessionId" PartnerClaimType="{property:SessionId}" />
+            <InputClaim ClaimTypeReferenceId="Culture" PartnerClaimType="{property:Culture}" DefaultValue="{Culture:RFC5646}" />
+          </InputClaims>
+        </TechnicalProfile>
+
+        <!-- this step logs when a user hits the custom policy log in page. There is no information about the user yet -->
+        <TechnicalProfile Id="Step-04-AppInsights-SignInRequest">
+          <InputClaims>
+            <!-- An input claim with a PartnerClaimType="eventName" is required. This is used by the AzureApplicationInsightsProvider to create an event with the specified value. -->
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="SignInStarted" />
+            <InputClaim ClaimTypeReferenceId="objectIdFromSession" PartnerClaimType="{property:ExistingSession}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="{property:ObjectId}" />
+            <InputClaim ClaimTypeReferenceId="appId" PartnerClaimType="{property:AppId}" />
+            <InputClaim ClaimTypeReferenceId="appEntityId" PartnerClaimType="{property:AppEntityId}" />
+            <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:DomainHint}" />
+            <InputClaim ClaimTypeReferenceId="allowJit" PartnerClaimType="{property:AllowJit}" />
+            <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="{property:AlignmentType}" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile>
+
+        <!-- this step logs when a user enters their username on the sign in page and clicks continue -->
+        <TechnicalProfile Id="Step-07-AppInsights-UserSignInRequest">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="UserSignIn" />
+            <InputClaim ClaimTypeReferenceId="extension_isFederated" PartnerClaimType="{property:FederatedUser}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="extension_isLocal" PartnerClaimType="{property:LocalUser}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="extension_IdP" PartnerClaimType="{property:FederationPartner}" DefaultValue="Not Applicable" />
+            <InputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" PartnerClaimType="{property:EligibleToConvert}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="isPasswordResetFlow" PartnerClaimType="{property:SSPR}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="isConvertToWorkAccountFlow" PartnerClaimType="{property:Convert}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="objectIdFromSession" PartnerClaimType="{property:ExistingSession}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="{property:signInName}" />
+            <InputClaim ClaimTypeReferenceId="appId" PartnerClaimType="{property:AppId}" />
+            <InputClaim ClaimTypeReferenceId="appEntityId" PartnerClaimType="{property:AppEntityId}" />
+            <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:DomainHint}" />
+            <InputClaim ClaimTypeReferenceId="allowJit" PartnerClaimType="{property:AllowJit}" />
+            <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="{property:AlignmentType}" />
+            <InputClaim ClaimTypeReferenceId="mcpId" PartnerClaimType="{property:MCPId}" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile>
+
+        <!--         <TechnicalProfile Id="AppInsights-UserSignUp">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="UserSignUp" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile> -->
+
+        <!-- this step logs when a user completes the sign in flow. -->
+        <TechnicalProfile Id="Step-18-AppInsights-SignInComplete">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="SignInComplete" />
+            <InputClaim ClaimTypeReferenceId="extension_isFederated" PartnerClaimType="{property:FederatedUser}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="extension_isLocal" PartnerClaimType="{property:LocalUser}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="extension_IdP" PartnerClaimType="{property:FederationPartner}" DefaultValue="Not Applicable" />
+            <InputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" PartnerClaimType="{property:EligibleToConvert}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="isPasswordResetFlow" PartnerClaimType="{property:SSPR}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="isConvertToWorkAccountFlow" PartnerClaimType="{property:Convert}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="objectIdFromSession" PartnerClaimType="{property:ExistingSession}" DefaultValue="false" />
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="{property:ObjectId}" />
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="{property:signInName}" />
+            <InputClaim ClaimTypeReferenceId="extension_ManagedUsername" PartnerClaimType="{property:ManagedUsername}" />
+            <!-- JIT token claims -->
+            <InputClaim ClaimTypeReferenceId="isJitFlow" PartnerClaimType="{property:IsJitFlow}" />
+            <InputClaim ClaimTypeReferenceId="jit_company" PartnerClaimType="{property:JitCompany}" />
+            <InputClaim ClaimTypeReferenceId="jit_country" PartnerClaimType="{property:JitCountry}" />
+            <InputClaim ClaimTypeReferenceId="jit_currency" PartnerClaimType="{property:JitCurrency}" />
+            <InputClaim ClaimTypeReferenceId="jit_language" PartnerClaimType="{property:JitLanguage}" />
+            <InputClaim ClaimTypeReferenceId="jit_culture" PartnerClaimType="{property:JitCulture}" />
+            <InputClaim ClaimTypeReferenceId="jit_timezone" PartnerClaimType="{property:JitTimezone}" />
+            <InputClaim ClaimTypeReferenceId="jit_userkey" PartnerClaimType="{property:JitUserKey}" />
+            <InputClaim ClaimTypeReferenceId="jit_isHierarchyAlignedUser" PartnerClaimType="{property:JitIsHierarchyAlignedUser}" />
+            <InputClaim ClaimTypeReferenceId="jit_permissions" PartnerClaimType="{property:JitPermissions}" />
+            <InputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="{property:JitExternalId}" />
+            <InputClaim ClaimTypeReferenceId="jit_accountkey" PartnerClaimType="{property:JitAccountKey}" />
+            <InputClaim ClaimTypeReferenceId="jit_accountnumbers" PartnerClaimType="{property:JitAccountNumbers}" />
+            <InputClaim ClaimTypeReferenceId="jit_sourcesystemcode" PartnerClaimType="{property:JitSourceSystemCode}" />
+            <InputClaim ClaimTypeReferenceId="jit_usertype" PartnerClaimType="{property:JitUserType}" />
+            <InputClaim ClaimTypeReferenceId="jit_unitnumber" PartnerClaimType="{property:JitUnitNumber}" />
+            <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="{property:JitAlignmentType}" />
+            <InputClaim ClaimTypeReferenceId="jit_siteUnitNumbers" PartnerClaimType="{property:JitSiteUnitNumbers}" />
+            <InputClaim ClaimTypeReferenceId="jit_siteNames" PartnerClaimType="{property:JitSiteNames}" />
+            <InputClaim ClaimTypeReferenceId="jit_graphNodeKeys" PartnerClaimType="{property:JitGraphNodeKeys}" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-SJ03.08-AppInsights-CallCDMJITRegisterAPI">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="CallCDMAPI" />
+            <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="{property:LastName}" />
+            <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="{property:FirstName}" />
+            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="{property:Email}" />
+            <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="{property:AlignmentType}" />
+            <InputClaim ClaimTypeReferenceId="jit_company" PartnerClaimType="{property:JitCompany}" />
+            <InputClaim ClaimTypeReferenceId="jit_country" PartnerClaimType="{property:JitCountry}" />
+            <InputClaim ClaimTypeReferenceId="jit_currency" PartnerClaimType="{property:JitCurrency}" />
+            <InputClaim ClaimTypeReferenceId="jit_language" PartnerClaimType="{property:JitLanguage}" />
+            <InputClaim ClaimTypeReferenceId="jit_culture" PartnerClaimType="{property:JitCulture}" />
+            <InputClaim ClaimTypeReferenceId="jit_rolename" PartnerClaimType="{property:JitRolename}" />
+            <InputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="{property:JitExternalId}" />
+            <InputClaim ClaimTypeReferenceId="jit_unitnumber" PartnerClaimType="{property:JitUnitNumber}" />
+            <InputClaim ClaimTypeReferenceId="jit_timezone" PartnerClaimType="{property:JitTimezone}" />
+            <InputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="{property:upn}" />
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="{property:b2cAzureObjectId}" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile>
+
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>Utilities</DisplayName>
+      <!-- initialize claims bag from pre-existing session cookie -->
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-01-Utilities-SessionClaimsToClaimsBag">
+          <DisplayName>Profile to fill claims bag with session data</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="started" DefaultValue="true" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="objectIdFromSession" />
+            <OutputClaim ClaimTypeReferenceId="signInName" />
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="sessionId" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-02-Utilities-PolicyClaimsToClaimsBag">
+          <!-- This has its own step because anything using session management will only output persisted values. We can put anything we want in the claims bag here -->
+          <DisplayName>Profile to fill claims bag with policy data</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="foobar" DefaultValue="000017" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="PolicyId" DefaultValue="{Policy:PolicyId}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="CorrelationID" DefaultValue="{Context:CorrelationId}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="appId" DefaultValue="{OIDC:ClientId}" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-17-Utilities-SaveClaimsToSession">
+          <DisplayName>SaveClaimsToSession</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="sessionId" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="sessionId" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+        </TechnicalProfile>
+
+        <!-- this step gets possible query parameters like if an sspr flow is happening directly from a link -->
+        <TechnicalProfile Id="Step-03-Utilities-NewSessionAndQueryParameters">
+          <DisplayName>Profile to fill claims with parameter values</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="sspr" DefaultValue="false" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="signInName" DefaultValue="{OAUTH-KV:email}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="sspr" DefaultValue="{OAUTH-KV:sspr}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="domainHint" DefaultValue="{OIDC:DomainHint}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="dummytrue" DefaultValue="true" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="dummyfalse" DefaultValue="false" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="mcpId" DefaultValue="{OAUTH-KV:mcp_id}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="mcpId" DefaultValue="{SAML-KV:mcp_id}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="allowJitString" DefaultValue="{OAUTH-KV:allow_jit}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="allowJitString" DefaultValue="{SAML-KV:allow_jit}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="alignmentTypeRaw" DefaultValue="{OAUTH-KV:alignment_type}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="alignmentTypeRaw" DefaultValue="{SAML-KV:alignment_type}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="sessionId" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CopySignInNameToReadOnly" />
+            <OutputClaimsTransformation ReferenceId="CopySignInNameToEmail" />
+            <OutputClaimsTransformation ReferenceId="CompareSSPRWithTrue" />
+            <OutputClaimsTransformation ReferenceId="CheckDomainHintIsEmpty" />
+            <OutputClaimsTransformation ReferenceId="CheckMCPIdIsEmpty" />
+            <OutputClaimsTransformation ReferenceId="AllowJitStringToBoolean" />
+            <OutputClaimsTransformation ReferenceId="AlignmentTypeToUpper" />
+            <OutputClaimsTransformation ReferenceId="CopyDomainHintToIDP" />
+            <OutputClaimsTransformation ReferenceId="GenerateSessionId" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+
+        <!-- this step can be used to enable convert local account to work account for specified domains-->
+        <TechnicalProfile Id="Step-08-Utilities-ParseDomainName">
+          <DisplayName>ParseDomainHint</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="dummytrue" DefaultValue="true" />
+            <InputClaim ClaimTypeReferenceId="signInName" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="knownDomain" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="ParseDomain" />
+            <OutputClaimsTransformation ReferenceId="DomainLookup" />
+            <OutputClaimsTransformation ReferenceId="CheckDomainParameterValue" />
+            <OutputClaimsTransformation ReferenceId="CheckIfisKnownCustomerIsTrueOrIsEligibleToConvertIsTrue" />
+          </OutputClaimsTransformations>
+          <!--<UseTechnicalProfileForSessionManagement
+          ReferenceId="SM-Noop" />-->
+        </TechnicalProfile>
+
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>REST APIs</DisplayName>
+      <!--https://docs.microsoft.com/en-us/azure/active-directory-b2c/custom-policy-rest-api-claims-exchange-->
+      <!-- this step goes to the b2c api to get exchange the sign in name of a user for the BillTrust account number(s) -->
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-SJ03.02-REST-GetAccountNumber">
+          <DisplayName>Get account Number</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:CDM-Alignment-API-GetAccountsForBilltrust-Url}</Item>
+            <Item Key="SendClaimsIn">QueryString</Item>
+            <!-- Set AuthenticationType to Basic or ClientCertificate in production environments -->
+            <Item Key="AuthenticationType">Bearer</Item>
+            <Item Key="UseClaimAsBearerToken">bearerToken</Item>
+            <!-- REMOVE the following line in production environments -->
+            <Item Key="AllowInsecureAuthInProduction">false</Item>
+          </Metadata>
+          <InputClaims>
+            <!-- Claims sent to your REST API -->
+            <InputClaim ClaimTypeReferenceId="bearerToken" />
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="email" />
+          </InputClaims>
+          <OutputClaims>
+            <!-- Claims parsed from your REST API -->
+            <OutputClaim ClaimTypeReferenceId="accountNumbers" />
+            <!-- <OutputClaim ClaimTypeReferenceId="accountNumber" /> -->
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="ConvertAccountNumbersStringCollectionToCommaDelimiterString" />
+          </OutputClaimsTransformations>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <!-- this step goes to aad to get an access token to call the b2c api for the BillTrust account number transaction-->
+        <TechnicalProfile Id="Step-SJ03.01-REST-AccessToken">
+          <DisplayName></DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:CDM-Alignment-API-Token-Endpoint}</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_CDMAlignmentAPIClientId" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_CDMAlignmentAPIClientSecret" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+            <InputClaim ClaimTypeReferenceId="scope" DefaultValue="{Settings:CDM-Alignment-API-Scope}" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-SJ03.03-REST-GetSiteForUser">
+          <DisplayName>Get Site For User</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:CDM-API-GetSiteForUser-URL}</Item>
+            <Item Key="SendClaimsIn">QueryString</Item>
+            <!-- Set AuthenticationType to Basic or ClientCertificate in production environments -->
+            <Item Key="AuthenticationType">ApiKeyHeader</Item>
+            <!-- <Item Key="UseClaimAsBearerToken">bearerToken</Item> -->
+            <!-- REMOVE the following line in production environments -->
+            <!-- <Item Key="AllowInsecureAuthInProduction">false</Item> -->
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="API_KEY" StorageReferenceId="{Settings:CDM-API-GetSiteForUser-KeyName}" />
+          </CryptographicKeys>
+          <InputClaims>
+            <!-- Claims sent to your REST API -->
+            <!-- <InputClaim ClaimTypeReferenceId="bearerToken"/> -->
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="email" />
+          </InputClaims>
+          <OutputClaims>
+            <!-- Claims parsed from your REST API -->
+            <OutputClaim ClaimTypeReferenceId="siteName" />
+            <OutputClaim ClaimTypeReferenceId="siteKey" />
+            <OutputClaim ClaimTypeReferenceId="isMultiSiteUser" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+
+        <TechnicalProfile Id="Step-SJ03.04-REST-CallMCPAPI">
+          <DisplayName>Send mcpId to Salesforce MCP</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:MCP-API-Service-URL}</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+            <Item Key="ClaimUsedForRequestPayload">mcpRequestBody</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_SalesforceMCPUsername" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_SalesforceMCPPassword" />
+          </CryptographicKeys>
+
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="GenerateMCPRequestBody" />
+          </InputClaimsTransformations>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="mcpRequestBody" />
+          </InputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-SJ03.07-REST-GetCDMJITRegisterAccessToken">
+          <DisplayName></DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:CDM-API-JITRegister-TokenEndpoint}</Item>
+            <Item Key="AuthenticationType">Basic</Item>
+            <Item Key="SendClaimsIn">Form</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:CDM-API-JITRegister-ClientId-KeyName}" />
+            <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:CDM-API-JITRegister-ClientSecret-KeyName}" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+            <InputClaim ClaimTypeReferenceId="scope" DefaultValue="{Settings:CDM-API-JITRegister-Scope}" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-SJ03.09-REST-CallCDMJITRegisterAPI">
+          <DisplayName>CallCdmAPI</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">{Settings:CDM-API-JITRegister-URL}</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+            <Item Key="UseClaimAsBearerToken">bearerToken</Item>
+            <Item Key="AllowInsecureAuthInProduction">false</Item>
+            <Item Key="ResolveJsonPathsInJsonTokens">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="bearerToken" />
+            <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="firstname" />
+            <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="lastname"/>
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="jit_company" PartnerClaimType="company" />
+            <InputClaim ClaimTypeReferenceId="jit_country" PartnerClaimType="country" />
+            <InputClaim ClaimTypeReferenceId="jit_currency" PartnerClaimType="currency" />
+            <InputClaim ClaimTypeReferenceId="jit_language" PartnerClaimType="language" />
+            <InputClaim ClaimTypeReferenceId="jit_culture" PartnerClaimType="culture" />
+            <InputClaim ClaimTypeReferenceId="jit_rolename" PartnerClaimType="rolename" />
+            <InputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="externalid" />
+            <InputClaim ClaimTypeReferenceId="jit_unitnumber" PartnerClaimType="unitnumber" />
+            <InputClaim ClaimTypeReferenceId="jit_timezone" PartnerClaimType="timezone" />
+            <InputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="upn" />
+            <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="alignmentType" />
+            <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="b2cAzureObjectId" />
+          </InputClaims>
+          <OutputClaims>
+            <!--Claims
+            which are echoed back. These values should overwrite the prior values whether set or not-->
+            <!-- <OutputClaim ClaimTypeReferenceId="lastname"  PartnerClaimType = "response.lastname"/>
+            <OutputClaim ClaimTypeReferenceId="firstname"  PartnerClaimType = "response.firstname"/>
+            <OutputClaim ClaimTypeReferenceId="email"  PartnerClaimType = "response.email"/>
+            <OutputClaim ClaimTypeReferenceId="company"  PartnerClaimType = "response.company"/>
+            <OutputClaim ClaimTypeReferenceId="country"  PartnerClaimType = "response.country"/>
+            <OutputClaim ClaimTypeReferenceId="currency"  PartnerClaimType = "response.currency"/>
+            <OutputClaim ClaimTypeReferenceId="language"  PartnerClaimType = "response.language"/>
+            <OutputClaim ClaimTypeReferenceId="culture"  PartnerClaimType = "response.culture"/>
+            <OutputClaim ClaimTypeReferenceId="timezone" PartnerClaimType = "response.timezone"/> -->
+            <!--Net
+            new claims sent back from the API-->
+            <OutputClaim ClaimTypeReferenceId="isJitFlow" DefaultValue="true" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="jit_userkey" PartnerClaimType="response.userkey" />
+            <OutputClaim ClaimTypeReferenceId="jit_isHierarchyAlignedUser" PartnerClaimType="response.isHierarchyAlignedUser" />
+            <OutputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="response.externalid" />
+            <OutputClaim ClaimTypeReferenceId="jit_permissions" PartnerClaimType="response.permissions" />
+            <OutputClaim ClaimTypeReferenceId="jit_accountkey" PartnerClaimType="response.accountkey" />
+            <OutputClaim ClaimTypeReferenceId="jit_accountnumbers" PartnerClaimType="response.accountnumbers" />
+            <OutputClaim ClaimTypeReferenceId="jit_sourcesystemcode" PartnerClaimType="response.sourcesystemcode" />
+            <OutputClaim ClaimTypeReferenceId="jit_usertype" PartnerClaimType="response.usertype" />
+            <OutputClaim ClaimTypeReferenceId="jit_siteUnitNumbers" PartnerClaimType="response.siteUnitNumbers" />
+            <OutputClaim ClaimTypeReferenceId="jit_siteNames" PartnerClaimType="response.siteNames" />
+            <OutputClaim ClaimTypeReferenceId="jit_graphNodeKeys" PartnerClaimType="response.graphNodeKeys" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>Azure Active Directory</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="AAD-Common">
+          <Metadata>
+            <Item Key="ClientId">{Settings:B2C-Extensions-AppClientId}</Item>
+            <Item Key="ApplicationObjectId">{Settings:B2C-Extensions-AppObjectId}</Item>
+          </Metadata>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-06-AAD-UserReadUsingManagedUsername-PreAuth">
+          <Metadata>
+            <Item Key="Operation">Read</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+            <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username was not found in our system.</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="extension_ManagedUsername" Required="true" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="creationType" />
+            <OutputClaim ClaimTypeReferenceId="extension_isFederated" DefaultValue="false" />
+            <OutputClaim ClaimTypeReferenceId="extension_isLocal" DefaultValue="false" />
+            <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="false" />
+            <OutputClaim ClaimTypeReferenceId="extension_IdP" />
+            <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" DefaultValue="empty" />
+            <OutputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" DefaultValue="false" />
+            <OutputClaim ClaimTypeReferenceId="extension_LastLoginDateTime" DefaultValue="2021-12-14T00:00:00.100000Z" />
+            <OutputClaim ClaimTypeReferenceId="extension_ForcePasswordChange" DefaultValue="false" />
+            <OutputClaim ClaimTypeReferenceId="extension_UsrType" />
+            <OutputClaim ClaimTypeReferenceId="preAuthManagedUsername" PartnerClaimType="extension_ManagedUsername" />
+            <OutputClaim ClaimTypeReferenceId="preAuthAltFedID" PartnerClaimType="extension_AltFedID" DefaultValue="" />
+            <OutputClaim ClaimTypeReferenceId="preAuthObjectId" PartnerClaimType="objectId" />
+            <OutputClaim ClaimTypeReferenceId="preAuthIDP" PartnerClaimType="extension_IdP" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="GetSystemDateTime" />
+            <OutputClaimsTransformation ReferenceId="CompareLastLoginDateWithCurrentDateTime" />
+            <OutputClaimsTransformation ReferenceId="CheckIfIsFirstTimeOrPasswordExpired" />
+            <OutputClaimsTransformation ReferenceId="CheckIfSSPRisTrueOrIsFirstTimeIsTrue" />
+          </OutputClaimsTransformations>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+        </TechnicalProfile>
+
+
+        <!-- <TechnicalProfile Id="Step-18a-WriteVerifiedAlternateFedId">
+          <Metadata>
+            <Item Key="Operation">Write</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+            <InputClaim ClaimTypeReferenceId="federationId" Required="true" />
+          </InputClaims>
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="federationId" PartnerClaimType="extension_VerifiedAlternateFedId" />
+          </PersistedClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="federationId" />
+          </OutputClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+        </TechnicalProfile> -->
+
+        <!--we
+        always want to do this step to read out of the directory, even in SSO scenarios-->
+        <!-- used to read data before sending claims -->
+        <TechnicalProfile Id="Step-10-AAD-UserReadUsingObjectId">
+          <Metadata>
+            <Item Key="Operation">Read</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="PolicyId" DefaultValue="{Policy:PolicyId}" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" />
+            <OutputClaim ClaimTypeReferenceId="extension_isLocal" />
+            <OutputClaim ClaimTypeReferenceId="extension_isFederated" />
+            <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" />
+            <OutputClaim ClaimTypeReferenceId="extension_isEligibleToConvert" />
+            <OutputClaim ClaimTypeReferenceId="extension_IdP" />
+            <OutputClaim ClaimTypeReferenceId="extension_AccountNumber" />
+            <OutputClaim ClaimTypeReferenceId="extension_TermsofUseConsentVersion" />
+            <OutputClaim ClaimTypeReferenceId="extension_TermsofUseRequired" />
+            <OutputClaim ClaimTypeReferenceId="CurrentToUVersion" DefaultValue="V0" AlwaysUseDefaultValue="true" />
+            <OutputClaim ClaimTypeReferenceId="lowercaseManagedUsername" PartnerClaimType="extension_ManagedUsername" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="GetSystemDateTime" />
+            <OutputClaimsTransformation ReferenceId="ChangeLowercaseManagedUsernameToLower" />
+            <OutputClaimsTransformation ReferenceId="IsTermsOfUseConsentRequiredForVersion" />
+          </OutputClaimsTransformations>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+          <!-- we should not use session management here because it skips this step -->
+          <!-- 9/17/24 cameron dissagrees, we need at least one read with session management -->
+          <!-- 9/23/24 cameron dissagrees again, this read step is critical and if we do session management we don't get the values
+             moved SM to write step -->
+          <!-- <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" /> -->
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>Token Issuers</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-33-TokenIssuer-JwtIssuer">
+          <DisplayName>JWT Issuer</DisplayName>
+          <Protocol Name="None" />
+          <OutputTokenFormat>JWT</OutputTokenFormat>
+          <Metadata>
+            <Item Key="client_id">{service:te}</Item>
+            <Item Key="issuer_refresh_token_user_identity_claim_type">objectId</Item>
+            <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
+            <!-- <Item Key="token_lifetime_secs">86400</Item>
+            <Item Key="id_token_lifetime_secs">86400</Item> -->
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+            <Key Id="issuer_refresh_token_key" StorageReferenceId="B2C_1A_TokenEncryptionKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims />
+          <OutputClaims />
+          <UseTechnicalProfileForSessionManagement ReferenceId="Step-33-TokenIssuer-SM-OAuth-issuer" />
+        </TechnicalProfile>
+
+        <!-- Session management technical profile for OIDC based tokens -->
+        <TechnicalProfile Id="Step-33-TokenIssuer-SM-OAuth-issuer">
+          <DisplayName>Session Management Provider</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.OAuthSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+        </TechnicalProfile>
+
+        <!-- SAML Token Issuer technical profile -->
+        <TechnicalProfile Id="Step-33-TokenIssuer-Saml2AssertionIssuer">
+          <DisplayName>Token Issuer</DisplayName>
+          <Protocol Name="SAML2" />
+          <OutputTokenFormat>SAML2</OutputTokenFormat>
+          <Metadata>
+            <!-- The issuer contains the policy name; it should be the same name as configured in the relying party application. B2C_1A_signup_signin_SAML is used below. -->
+            <Item Key="IssuerUri">{Settings:SAML-Issuer-URI}</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="MetadataSigning" StorageReferenceId="{Settings:SAML-Issuer-Cert-PolicyKey}" />
+            <Key Id="SamlAssertionSigning" StorageReferenceId="{Settings:SAML-Issuer-Cert-PolicyKey}" />
+            <Key Id="SamlMessageSigning" StorageReferenceId="{Settings:SAML-Issuer-Cert-PolicyKey}" />
+          </CryptographicKeys>
+          <InputClaims />
+          <OutputClaims />
+          <UseTechnicalProfileForSessionManagement ReferenceId="Step-33-TokenIssuer-SM-Saml-issuer" />
+        </TechnicalProfile>
+
+        <!-- Session management technical profile for SAML based tokens -->
+        <TechnicalProfile Id="Step-33-TokenIssuer-SM-Saml-issuer">
+          <DisplayName>Session Management Provider</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.SamlSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="UserInfoIssuer">
+          <DisplayName>JSON Issuer</DisplayName>
+          <Protocol Name="None" />
+          <OutputTokenFormat>JSON</OutputTokenFormat>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <!-- The below claims are what will be returned on the UserInfo Endpoint if in the Claims Bag-->
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <!-- sending givenName as firstName and surname as lastName per the connect team's request  -->
+            <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="firstName"/>
+            <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="lastName"/>
+            <InputClaim ClaimTypeReferenceId="displayName" />
+            <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+            <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="sub" />
+          </InputClaims>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="UserInfoAuthorization">
+          <DisplayName>UserInfo authorization</DisplayName>
+          <Protocol Name="None" />
+          <InputTokenFormat>JWT</InputTokenFormat>
+          <Metadata>
+            <!-- Update the Issuer and Audience below -->
+            <!-- Audience is optional, Issuer is required-->
+            <Item Key="issuer">{Settings:UserInfoIssuer}</Item>
+            <Item Key="audience">[ "{Settings:UserInfoAudience}" ]</Item>
+            <Item Key="client_assertion_type">urn:ietf:params:oauth:client-assertion-type:jwt-bearer</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="objectId" />
+            <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+            <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+            <!-- Optional claims to read from the access token. -->
+            <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name"/>
+            <OutputClaim ClaimTypeReferenceId="surname" PartnerClaimType="family_name"/>
+             
+          </OutputClaims>
+        </TechnicalProfile>
+
+
+      </TechnicalProfiles>
+
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>User Interaction</DisplayName>
+      <TechnicalProfiles>
+
+        <!--This
+        technical profile collects the sign-in username -->
+        <TechnicalProfile Id="Step-05-UserInteraction-PromptForSignInName">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+            <Item Key="setting.showCancelButton">false</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" DefaultValue="{OIDC:LoginHint}" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CopySignInNameToReadOnly" />
+            <OutputClaimsTransformation ReferenceId="CopySignInNameToEmail" />
+          </OutputClaimsTransformations>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="Step-04a-Validate-SignInNameExists" />
+          </ValidationTechnicalProfiles>
+        </TechnicalProfile>
+
+        <!-- read the directory looking for managedUsername equal to the signInName -->
+        <TechnicalProfile Id="Step-04a-Validate-SignInNameExists">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Metadata>
+            <Item Key="Operation">Read</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+            <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">We cannot find this username or email address.</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="extension_ManagedUsername" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-18-UserInteraction-FedIdMismatchError">
+          <DisplayName>Error message</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+            <Item Key="setting.showContinueButton">false</Item>
+            <Item Key="setting.showCancelButton">false</Item>
+          </Metadata>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="CreateFedIdMismatchErrorMessage" />
+          </InputClaimsTransformations>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="FedIdMismatchErrorMessage" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="FedIdMismatchErrorMessage" />
+          </OutputClaims>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-13-UserInteraction-SelfAsserted-Input-ToU-SignIn">
+          <DisplayName>Self Asserted ToU</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.TermsofUse</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" DefaultValue="AgreeToTermsOfUseConsentNo" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" Required="true" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <!-- write the current app version to the users version attribute if the user reconsents to TOU on sign in -->
+        <TechnicalProfile Id="Step-14-Update-TOU-Status">
+          <Metadata>
+            <Item Key="Operation">Write</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+          </InputClaims>
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="objectId" />
+            <PersistedClaim ClaimTypeReferenceId="CurrentToUVersion" PartnerClaimType="extension_termsOfUseConsentVersion" />
+            <PersistedClaim ClaimTypeReferenceId="systemDateTime" PartnerClaimType="extension_TermsOfUseAcceptedDate" />
+          </PersistedClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+        </TechnicalProfile>
+
+        <!-- write the current date to the users record so we can record their last login date -->
+        <TechnicalProfile Id="Step-15-Update-Last-Login">
+          <Metadata>
+            <Item Key="Operation">Write</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+          </InputClaims>
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="objectId" />
+            <PersistedClaim ClaimTypeReferenceId="systemDateTime" PartnerClaimType="extension_LastLoginDateTime" />
+          </PersistedClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+        </TechnicalProfile>
+
+        <!-- write the current date to the users record so we can record their last login date -->
+        <TechnicalProfile Id="Step-16-Update-OktaMigrated-UsrType">
+          <Metadata>
+            <Item Key="Operation">Write</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+          </InputClaims>
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="objectId" />
+            <PersistedClaim ClaimTypeReferenceId="extension_UsrType" DefaultValue="SUPW" AlwaysUseDefaultValue="true" />
+          </PersistedClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="AdminSignup-SelfAsserted-Social">
+          <DisplayName>User ID signup</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <!-- <InputClaims>
+            <InputClaim ClaimTypeReferenceId="displayName" />
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+          </InputClaims> -->
+          <OutputClaims>
+            <!-- These claims are not shown to the user because their value is obtained through the "ValidationTechnicalProfiles"
+                 referenced below, or a default value is assigned to the claim. A claim is only shown to the user to provide a 
+                 value if its value cannot be obtained through any other means. -->
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="newUser" />
+            <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+
+            <!-- Optional claims. These claims are collected from the user and can be modified. If a claim is to be persisted in the directory after having been 
+                 collected from the user, it needs to be added as a PersistedClaim in the ValidationTechnicalProfile referenced below, i.e. 
+                 in AAD-UserWriteUsingAlternativeSecurityId. -->
+            <!-- <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" /> -->
+          </OutputClaims>
+          <!-- the following was commented out so that it won't create the user in the directory -->
+          <!-- <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+          </ValidationTechnicalProfiles> -->
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialSignup" />
+        </TechnicalProfile>
+
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+  </ClaimsProviders>
+
+  <UserJourneys>
+    <UserJourney Id="SignIn" DefaultCpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer">
+      <OrchestrationSteps>
+
+        <!-- gather claims from any existing session -->
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SessionToClaimsBag" TechnicalProfileReferenceId="Step-01-Utilities-SessionClaimsToClaimsBag" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="PolicyClaimsToClaimsBag" TechnicalProfileReferenceId="Step-02-Utilities-PolicyClaimsToClaimsBag" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- get query string parameters if there is not an existing session -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetParametersFromQuery" TechnicalProfileReferenceId="Step-03-Utilities-NewSessionAndQueryParameters" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Track that we have received a sign in request -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TrackSignInRequest" TechnicalProfileReferenceId="Step-04-AppInsights-SignInRequest" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Ask user for email if it was not passed on the query string or from pre-existing session -->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <!-- skip if signInName was passed -->
+              <Value>signInName</Value>
+              <Value></Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <!-- <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>domainHint</Value>
+              <Value></Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition> -->
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SignInNameExchange" TechnicalProfileReferenceId="Step-05-UserInteraction-PromptForSignInName" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- read user via ManagedUsername property without returning ObjectId - sets a variety of claims to control the journey -->
+        <!-- TO DO!!!
+          - We need to make sure that the user either has "extension_isFederated" = True or "extension_isLocal" = True in this step, or throw an error
+          - if we implement a domain hint here, then we would want to set "extension_isFederated" to True manually (among other things)
+        -->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingManagedUsername-Prelogin" TechnicalProfileReferenceId="Step-06-AAD-UserReadUsingManagedUsername-PreAuth" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- TODO: track as domain hint request? -->
+
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TrackUserSignInRequest" TechnicalProfileReferenceId="Step-07-AppInsights-UserSignInRequest" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- TODO: find out if this step is even needed. it actually has nothing to do with domain hint -->
+        <!-- parse off domain suffix to use as a trigger for someone eligible to convert -->
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ParseDomainHintLogic" TechnicalProfileReferenceId="Step-08-Utilities-ParseDomainName" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- 
+          TODO: We should either add the identity providers to the collection here, or we should do it in the actual federations subjourney
+                We can also check to make sure the _isFederated or _isLocal value is set
+        -->
+
+
+        <!-- TODO: Domain hint won't have _isFederated or _isLocal, so we need some other way. right now local gets skipped by default because the read step never happens and extension_isLocal is null -->
+        <!-- TODO: We need to make sure that by this point, everyone who is local has "extension_isLocal" or "extension_isFederated" set to True -->
+        <OrchestrationStep Order="9" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <!-- skip if not Local -->
+              <Value>extension_isLocal</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="SubJourney-1-AuthenticateUserLocal" />
+          </JourneyList>
+        </OrchestrationStep>
+
+        <!-- TODO: again, we need a more reliable way of making sure this step runs for domainhint -->
+        <OrchestrationStep Order="10" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <!-- skip if not Federated -->
+              <Value>extension_isFederated</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="SubJourney-2-AuthenticateUserFederated" />
+          </JourneyList>
+        </OrchestrationStep>
+
+
+        <!-- always read the user to get stored claims -->
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="Step-10-AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="12" Type="InvokeSubJourney">
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="SubJourney-3-PostSignInAPICalls" />
+          </JourneyList>
+        </OrchestrationStep>
+
+        <!-- Display Terms of Use consent page for any SignIn scenario based on extension_termsOfUseRequired claim -->
+        <OrchestrationStep Order="13" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>extension_termsOfUseRequired</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_termsOfUseRequired</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>B2CToURequired</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ShowToUConsentPageForUser" TechnicalProfileReferenceId="Step-13-UserInteraction-SelfAsserted-Input-ToU-SignIn" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!--Process
+        Terms of Use consent for any User and write the Version claims -->
+        <OrchestrationStep Order="14" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>extension_termsOfUseRequired</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_termsOfUseRequired</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>B2CToURequired</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SyncClaimsforToU" TechnicalProfileReferenceId="Step-14-Update-TOU-Status" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!--Process
+        Terms of Use consent for any User and write the Version claims -->
+        <OrchestrationStep Order="15" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="UpdateLastLogin" TechnicalProfileReferenceId="Step-15-Update-Last-Login" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!--Process
+        Terms of Use consent for any User and write the Version claims -->
+        <OrchestrationStep Order="16" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>extension_UsrType</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>extension_UsrType</Value>
+              <Value>oktaMigrated</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="UpdateOktaMigratedUsrType" TechnicalProfileReferenceId="Step-16-Update-OktaMigrated-UsrType" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- final step before issuing the token, we write to the session -->
+        <OrchestrationStep Order="17" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SaveClaimsToSession" TechnicalProfileReferenceId="Step-17-Utilities-SaveClaimsToSession" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- <OrchestrationStep Order="18" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-{Settings:TokenIssuer-Type}" /> -->
+
+        <!-- I want to make this a subjourney instead since that will prevent needing to set a step in RP files (which causes issues because of azure sync times -->
+        <OrchestrationStep Order="18" Type="InvokeSubJourney">
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="SubJourney-Final-IssueToken" />
+          </JourneyList>
+        </OrchestrationStep>
+
+        <!--
+        NOTE!!! Since the previous subjourney is a "transfer", we don't actually get to this step! 
+        Per a comment on this page: https://medium.com/the-new-control-plane/exploring-subjourneys-in-azure-ad-b2c-91362640bd52
+          We need to specify a SendClaims in both the subjourney and the main journey, then supply  aDefaultCpimIssuerTechnicalProfileReferenceId
+        -->
+        <OrchestrationStep Order="19" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-{Settings:TokenIssuer-Type}" />
+
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+    <UserJourney Id="UserInfoJourney" DefaultCpimIssuerTechnicalProfileReferenceId="UserInfoIssuer">
+      <Authorization>
+        <AuthorizationTechnicalProfiles>
+          <AuthorizationTechnicalProfile ReferenceId="UserInfoAuthorization" />
+        </AuthorizationTechnicalProfiles>
+      </Authorization>
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges UserIdentity="false">
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="UserInfoIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+
+    <UserJourney Id="SignUpFederated">
+      <OrchestrationSteps>
+
+        <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="AAD-ORG-OIDC-CE" />
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AAD-ORG-OIDC-CE" TechnicalProfileReferenceId="AdminSignup-FederationPartner-AAD" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId).  -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AdminSignup-SelfAsserted-Social" TechnicalProfileReferenceId="AdminSignup-SelfAsserted-Social" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
+             from the user. So, in that case, create the user in the directory if one does not already exist 
+             (verified using objectId which would be set from the last step if account was created in the directory. -->
+
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+  </UserJourneys>
+
+  <SubJourneys>
+    <SubJourney Id="SubJourney-3-PostSignInAPICalls" Type="Call">
+      <OrchestrationSteps>
+        <!-- If the policy is BillTrust, call CDM API -->
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>PolicyId</Value>
+              <Value>{Settings:Full-BillTrust-Policy-Name}</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetB2CAPIAccessTokenBillTrust" TechnicalProfileReferenceId="Step-SJ03.01-REST-AccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>PolicyId</Value>
+              <Value>{Settings:Full-BillTrust-Policy-Name}</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAccountNumberBillTrust" TechnicalProfileReferenceId="Step-SJ03.02-REST-GetAccountNumber" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- If the policy is EasyPay, call CDM API to get account number(s)-->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>PolicyId</Value>
+              <Value>B2C_1A_{Settings:RP-EasyPay-Policy-Name}</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetB2CAPIAccessTokenEasyPay" TechnicalProfileReferenceId="Step-SJ03.01-REST-AccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>PolicyId</Value>
+              <Value>B2C_1A_{Settings:RP-EasyPay-Policy-Name}</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetAccountNumberEasyPay" TechnicalProfileReferenceId="Step-SJ03.02-REST-GetAccountNumber" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>PolicyId</Value>
+              <Value>{Settings:Full-RP04-Policy-Name}</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetUserSiteFromCDM" TechnicalProfileReferenceId="Step-SJ03.03-REST-GetSiteForUser" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Only run if mcpId exists and is populated (yes we need both conditions) -->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>mcpId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>mcpIdIsEmpty</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="CallMCPAPI" TechnicalProfileReferenceId="Step-SJ03.04-REST-CallMCPAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetB2CAPIAccessTokenJIT" TechnicalProfileReferenceId="Step-SJ03.07-REST-GetCDMJITRegisterAccessToken" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AppInsights-CallCDMJITRegisterAPI" TechnicalProfileReferenceId="Step-SJ03.08-AppInsights-CallCDMJITRegisterAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>jitEnabled</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>allowJit</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="CallCDMAPIForJIT" TechnicalProfileReferenceId="Step-SJ03.09-REST-CallCDMJITRegisterAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+
+      </OrchestrationSteps>
+
+    </SubJourney>
+
+    <!-- Dedicated subjourney for issuing tokens. This prevents needing to modify RP files when re-numbering -->
+    <SubJourney Id="SubJourney-Final-IssueToken" Type="Transfer">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer" />
+
+        <!-- Track that we have sent a token -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TrackSignInComplete" TechnicalProfileReferenceId="Step-18-AppInsights-SignInComplete" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </SubJourney>
+
+  </SubJourneys>
+
+</TrustFrameworkPolicy>

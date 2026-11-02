@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" TenantId="wintersnowb2c.onmicrosoft.com" PolicyId="B2C_1A_Domain_Hint" PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/Domain_Hint">
+
+    <BasePolicy>
+        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_Connect_Federations</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+
+            <ClaimType Id="email">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="extension_ManagedUsername">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="federationId">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="domainHint">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="displayname">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="identityProviders">
+                <DisplayName>IdentityProviders</DisplayName>
+                <DataType>stringCollection</DataType>
+            </ClaimType>
+
+            <ClaimType Id="signInName">
+                <DisplayName>signInName</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="objectId">
+                <DisplayName>User's Object ID</DisplayName>
+                <DataType>string</DataType>
+                <DefaultPartnerClaimTypes>
+                    <Protocol Name="OAuth2" PartnerClaimType="oid" />
+                    <Protocol Name="OpenIdConnect" PartnerClaimType="oid" />
+                </DefaultPartnerClaimTypes>
+            </ClaimType>
+
+            <ClaimType Id="identityProvider">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="issuerUserId">
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="alternativeSecurityId">
+                <DisplayName>AlternativeSecurityId</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="userPrincipalName">
+                <DataType>string</DataType>
+                <DefaultPartnerClaimTypes>
+                    <Protocol Name="OAuth2" PartnerClaimType="upn" />
+                    <Protocol Name="OpenIdConnect" PartnerClaimType="upn" />
+                </DefaultPartnerClaimTypes>
+            </ClaimType>
+
+            <ClaimType Id="sub">
+                <DataType>string</DataType>
+                <DefaultPartnerClaimTypes>
+                    <Protocol Name="OpenIdConnect" PartnerClaimType="sub" />
+                </DefaultPartnerClaimTypes>
+            </ClaimType>
+
+            <!-- last login date -->
+            <ClaimType Id="systemDateTime">
+                <DisplayName>Current Date time</DisplayName>
+                <DataType>dateTime</DataType>
+            </ClaimType>
+
+            <!--Application Insights logging-->
+            <ClaimType Id="EventType">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="EventTimestamp">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="PolicyId">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="CorrelationId">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="ClientId">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="RedirectUri">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="Resource">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="Scope">
+                <DataType>string</DataType>
+            </ClaimType> 
+            <ClaimType Id="UserNotFoundMessage">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="objectIdFromSession">
+                <DisplayName>objectIdFromSession</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>Parameter provided by the default session management provider to indicate that the object id has been retrieved from an SSO session.</UserHelpText>
+            </ClaimType>
+
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateIdentityProvidersCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="domainHint" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CopyManagedUsernameToSignInName" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="extension_ManagedUsername" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <!-- gets the current time and stores it in a variable-->
+            <ClaimsTransformation Id="GetSystemDateTime" TransformationMethod="GetCurrentDateTime">
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="systemDateTime" TransformationClaimType="currentDateTime" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ClientDefinitions>
+            <ClientDefinition Id="DefaultWeb">
+                <ClientUIFilterFlags>LineMarkers, MetaRefresh</ClientUIFilterFlags>
+            </ClientDefinition>
+        </ClientDefinitions>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.error">
+                <LoadUri>~/tenant/templates/AzureBlue/exception.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:globalexception:1.1.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Error page</Item>
+                </Metadata>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.selfAsserted.UserNotFoundError">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">UserNotFoundMessage</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfAsserted.UserNotFoundError.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>                <!-- english -->
+            </SupportedLanguages>
+
+            <LocalizedResources Id="api.selfAsserted.UserNotFoundError.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Login Error!</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="UserNotFoundMessage" StringId="DisplayName">The user is not found in the directory. Please contact your IT department or your Ecolab partner to gain access.</LocalizedString>
+          <!-- <LocalizedString ElementType="GetLocalizedStringsTransformationClaimType" StringId="part2">is not</LocalizedString>
+          <LocalizedString ElementType="GetLocalizedStringsTransformationClaimType" StringId="part4">. Signin cannot continue.</LocalizedString> -->
+        </LocalizedStrings>
+      </LocalizedResources>
+        </Localization>
+    </BuildingBlocks>
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <DisplayName>Trust Framework Policy Engine</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="TpEngine_c3bd4fe2-1775-4013-b91d-35f16d377d13">
+                    <DisplayName>Trustframework Policy Engine Default Technical Profile</DisplayName>
+                    <Protocol Name="None" />
+                    <Metadata>
+                        <Item Key="url">{service:te}</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+        <ClaimsProvider>
+            <DisplayName>Application Insights</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="AppInsights-Base">
+                    <DisplayName>Application Insights</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="InstrumentationKey">4c06f918-ec06-4809-aa8c-85420b29a9b2</Item>
+                        <Item Key="DeveloperMode">false</Item>
+                        <Item Key="DisableTelemetry ">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <!-- Properties of an event are added through the syntax {property:NAME}, where NAME is property being added to the event. DefaultValue can be either a static value or a value that's resolved by one of the supported DefaultClaimResolvers. -->
+                        <InputClaim ClaimTypeReferenceId="EventTimestamp" PartnerClaimType="{property:EventTimestamp}" DefaultValue="{Context:DateTimeInUtc}" />
+                        <InputClaim ClaimTypeReferenceId="PolicyId" PartnerClaimType="{property:Policy}" DefaultValue="{Policy:PolicyId}" />
+                        <InputClaim ClaimTypeReferenceId="CorrelationId" PartnerClaimType="{property:CorrelationId}" DefaultValue="{Context:CorrelationId}" />
+                    </InputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AppInsights-UserNotFound">
+                    <InputClaims>
+                        <!-- An input claim with a PartnerClaimType="eventName" is required. This is used by the AzureApplicationInsightsProvider to create an event with the specified value. -->
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="DomainHint User not found" />
+                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="{property:Email}" />
+                        <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:Partner IDP}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Base" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AppInsights-SignInStarted">
+                    <InputClaims>
+                        <!-- An input claim with a PartnerClaimType="eventName" is required. This is used by the AzureApplicationInsightsProvider to create an event with the specified value. -->
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="DomainHint SignInStarted" />
+                        <InputClaim ClaimTypeReferenceId="objectIdFromSession" PartnerClaimType="{property:ExistingSession}" DefaultValue="false" />
+                        <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="{property:ObjectId}" />
+                        <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:DomainHint}" DefaultValue="{OIDC:DomainHint}" />
+                        <InputClaim ClaimTypeReferenceId="ClientId" PartnerClaimType="{property:ClientId}" DefaultValue="{OIDC:ClientId}" />
+                        <InputClaim ClaimTypeReferenceId="RedirectUri" PartnerClaimType="{property:RedirectUri}" DefaultValue="{OIDC:RedirectUri}" />
+                        <InputClaim ClaimTypeReferenceId="Resource" PartnerClaimType="{property:Resource}" DefaultValue="{OIDC:Resource}" />
+                        <InputClaim ClaimTypeReferenceId="Scope" PartnerClaimType="{property:Scope}" DefaultValue="{OIDC:Scope}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Base" />
+                </TechnicalProfile>
+
+                <!-- log info extracted from the token/assertion -->
+                <TechnicalProfile Id="AppInsights-UserSignInRequest">
+                    <InputClaims>
+                        <!-- An input claim with a PartnerClaimType="eventName" is required. This is used by the AzureApplicationInsightsProvider to create an event with the specified value. -->
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="DomainHint SignInRequest" />
+                        <InputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="{property:identityProvider}" />
+                        <InputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="{property:issuerUserId}" />
+                        <InputClaim ClaimTypeReferenceId="federationId" PartnerClaimType="{property:federationId}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Base" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AppInsights-SignInComplete">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="DomainHint SignInComplete" />
+                        <InputClaim ClaimTypeReferenceId="extension_ManagedUsername" PartnerClaimType="{property:ManagedUsername}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Base" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Utilities</DisplayName>
+            <TechnicalProfiles>
+                <!-- this step gets possible query parameters -->
+                <TechnicalProfile Id="Utilities-GetQueryParameters">
+                    <DisplayName>Profile to fill claims with parameter values</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="domainHint" DefaultValue="{OIDC:DomainHint}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="federationId" DefaultValue=""/>
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateIdentityProvidersCollection" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Error Condition </DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="UserNotFoundError">
+                    <DisplayName>UserNotFoundError</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfAsserted.UserNotFoundError</Item>
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="UserNotFoundMessage" DefaultValue="This user is not found" AlwaysUseDefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="AAD-Common">
+                    <DisplayName>Azure Active Directory</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ClientId">55fa7d86-8af1-4cc8-932e-094213d1c75f</Item>
+                        <Item Key="ApplicationObjectId">97b17a60-0af3-4c09-b0eb-4a24850bc22a</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <IncludeInSso>false</IncludeInSso>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="ReadUser">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">User does not exist. Please sign up before you can sign in.</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="federationId" PartnerClaimType="extension_ManagedUsername" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" DefaultValue="UserNotFound" />
+                        <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" DefaultValue="empty" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyManagedUsernameToSignInName" />
+                        <OutputClaimsTransformation ReferenceId="GetSystemDateTime" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="ReadUser-Noop">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">User does not exist. Please sign up before you can sign in.</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" DefaultValue="empty" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <!--
+                        session management here seems to cause the policy to skip reading the user, which causes the managed username to be blank.
+                        hopefully adding this second read without session management will ensure that the properties we need make it into the token
+                    -->
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <!-- update user -->
+                <TechnicalProfile Id="UpdateUser">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="systemDateTime" PartnerClaimType="extension_LastLoginDateTime" />
+                        <PersistedClaim ClaimTypeReferenceId="alternativeSecurityId" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+        <ClaimsProvider>
+            <DisplayName>Session Management</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="SM-Noop">
+                    <DisplayName>Noop Session Management Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.NoopSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SM-AAD">
+                    <DisplayName>Session Mananagement Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.DefaultSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="identityProvider" />
+                        <PersistedClaim ClaimTypeReferenceId="signInName" />
+                        <PersistedClaim ClaimTypeReferenceId="AlternativeSecurityId" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectIdFromSession" DefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+        <ClaimsProvider>
+            <DisplayName>Token Issuer</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="JwtIssuer">
+                    <DisplayName>JWT Issuer</DisplayName>
+                    <Protocol Name="None" />
+                    <OutputTokenFormat>JWT</OutputTokenFormat>
+                    <Metadata>
+                        <Item Key="client_id">{service:te}</Item>
+                        <Item Key="issuer_refresh_token_user_identity_claim_type">objectId</Item>
+                        <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                        <Key Id="issuer_refresh_token_key" StorageReferenceId="B2C_1A_TokenEncryptionKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims />
+                    <OutputClaims />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+    <UserJourneys>
+        <UserJourney Id="DomainHint-SignIn">
+            <OrchestrationSteps>
+
+                <!-- gather claims from any existing session -->
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SessionToClaimsBag" TechnicalProfileReferenceId="Utilities-GetQueryParameters" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Track that we have received a sign in request -->
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="TrackSignInRequest" TechnicalProfileReferenceId="AppInsights-SignInStarted" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="3" Type="InvokeSubJourney">
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="FederationPartnersSelection" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <!--Track sign in request-->
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="UserSignInRequest" TechnicalProfileReferenceId="AppInsights-UserSignInRequest" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- For external IDP authentication, attempt to find the user account in the directory. -->
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ReadUser-CE" TechnicalProfileReferenceId="ReadUser" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- For external IDP authentication, attempt to find the user account in the directory. -->
+                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>objectId</Value>
+                            <Value>UserNotFound</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="TrackUserNotFound" TechnicalProfileReferenceId="AppInsights-UserNotFound" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>objectId</Value>
+                            <Value>UserNotFound</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ShowUserNotFound" TechnicalProfileReferenceId="UserNotFoundError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- second read without session management -->
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ReadUser-Noop" TechnicalProfileReferenceId="ReadUser-Noop" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- update user if found -->
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Value>UserNotFound</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="UpdateUser" TechnicalProfileReferenceId="UpdateUser" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Track that we have finished sign in -->
+                <OrchestrationStep Order="10" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="TrackSignInComplete" TechnicalProfileReferenceId="AppInsights-SignInComplete" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="11" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+            </OrchestrationSteps>
+            <ClientDefinition ReferenceId="DefaultWeb" />
+        </UserJourney>
+    </UserJourneys>
+
+    <RelyingParty>
+        <DefaultUserJourney ReferenceId="DomainHint-SignIn" />
+        <UserJourneyBehaviors>
+            <SingleSignOn Scope="Tenant" />
+            <SessionExpiryType>Rolling</SessionExpiryType>
+            <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="4c06f918-ec06-4809-aa8c-85420b29a9b2" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+        </UserJourneyBehaviors>
+        <TechnicalProfile Id="CDM-RP-OIDC">
+            <DisplayName>CDM-RP-OIDC</DisplayName>
+            <Protocol Name="OpenIdConnect" />
+            <OutputClaims>
+                <OutputClaim ClaimTypeReferenceId="objectId" />
+                <OutputClaim ClaimTypeReferenceId="identityProvider" />
+                <OutputClaim ClaimTypeReferenceId="issuerUserId" />
+                <OutputClaim ClaimTypeReferenceId="extension_ManagedUsername" PartnerClaimType="ManagedUsername" />
+                <OutputClaim ClaimTypeReferenceId="CorrelationId" DefaultValue="{Context:CorrelationId}" /> 
+            </OutputClaims>
+            <SubjectNamingInfo ClaimType="oid" />
+        </TechnicalProfile>
+    </RelyingParty>
+
+</TrustFrameworkPolicy>

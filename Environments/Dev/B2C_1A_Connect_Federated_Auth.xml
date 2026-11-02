@@ -1,0 +1,1191 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
+    PolicySchemaVersion="0.3.0.0"
+    TenantId="wintersnowb2c.onmicrosoft.com"
+    PolicyId="B2C_1A_Connect_Federated_Auth_dev"
+    PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_Connect_Federated_Auth_dev"
+    TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97"
+    DeploymentMode="Development"
+    UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+    <BasePolicy>
+        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_Connect_Federations_dev</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <!-- User Object Attributes -->
+            <ClaimType Id="extension_AltFedID">
+                <DisplayName>The FederationID of the ADFS user</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="extension_isFederated">
+                <DisplayName>Indicates if user account is Federated</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="extension_isLocal">
+                <DisplayName>Indicates if user account is Local</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="extension_isFirstTime">
+                <DisplayName>Indicates if user is logging in for the first time</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="readOnlyEmail">
+                <DisplayName>Email Address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText />
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="extension_isEligibleToConvert">
+                <DisplayName>Indicates whether the user should be presented with an option to convert to a work account</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Add help text here</AdminHelpText>
+            </ClaimType>
+
+            <ClaimType Id="extension_IdP">
+                <DisplayName>Name of IdP</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="preAuthObjectId">
+                <DisplayName>Pre-Auth ManagedUsername</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="preAuthManagedUsername">
+                <DisplayName>Pre-Auth ManagedUsername</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="preAuthAltFedID">
+                <DisplayName>Pre-Auth AltFedID</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="preAuthIDP">
+                <DisplayName>Pre-Auth IDP</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="identityProviders">
+                <DisplayName>IdentityProviders</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>User identity providers</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="foundUserObjectId">
+                <DisplayName>foundUserObjectId</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="FederationIdMatchesPreAuthManagedUsername">
+                <DisplayName>FederationIdMatchesPreAuthManagedUsername</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="FederationIdMatchesPreAuthAltFedID">
+                <DisplayName>FederationIdMatchesPreAuthAltFedID</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="IDPMatchesPreAuthIDP">
+                <DisplayName>IDPMatchesPreAuthIDP</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="HasValidFederationId">
+                <DisplayName>HasMatchingFederationId</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="HasInValidFederationId">
+                <DisplayName>HasMatchingFederationId</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="CanSetUpAltFedID">
+                <DisplayName>CanSetUpAltFedID</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="InValidFedIDButValidIDP">
+                <DisplayName>InValidFedIDButValidIDP</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="PostAuthClaimsMatchPreAuthValues">
+                <DisplayName>PostAuthClaimsMatchPreAuthValues</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="ErrorDetailsMessage">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="ErrorDetailsMessage_FederationId">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="ErrorDetailsMessage_PreAuthIDP">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="ErrorDetailsMessage_CorrelationId">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="ErrorDetailsMessage_PreAuthManagedUsername">
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="EventType">
+                <DisplayName>Event type</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="EventTimestamp">
+                <DisplayName>Event timestamp</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="PolicyId">
+                <DisplayName>Policy Id</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="Culture">
+                <DisplayName>Culture ID</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="CorrelationId">
+                <DisplayName>Correlation Id</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <!-- JIT -->
+            <ClaimType Id="userWasCreated">
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="allowJit">
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+
+            <ClaimsTransformation Id="AddPreAuthIDPToIdentityProvidersCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthIDP" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CompareFederationIdWithPreAuthManagedUsername" TransformationMethod="CompareClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthManagedUsername" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="federationId" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="FederationIdMatchesPreAuthManagedUsername" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CompareFederationIdWithPreAuthAltFedID" TransformationMethod="CompareClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthAltFedID" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="federationId" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="FederationIdMatchesPreAuthAltFedID" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CompareIDPWithPreAuthIDP" TransformationMethod="CompareClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthIDP" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="extension_IdP" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="IDPMatchesPreAuthIDP" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckIfHasValidFederationId" TransformationMethod="OrClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="FederationIdMatchesPreAuthManagedUsername" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="FederationIdMatchesPreAuthAltFedID" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="HasValidFederationId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckIfHasInvalidFederationId" TransformationMethod="NotClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="HasValidFederationId" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="HasInValidFederationId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckIfInValidFedIDButValidIDP" TransformationMethod="AndClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="HasInValidFederationId" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="IDPMatchesPreAuthIDP" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="InValidFedIDButValidIDP" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckIfCanSetUpAltFedID" TransformationMethod="AndClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="InValidFedIDButValidIDP" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="CanSetUpAltFedID" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckIfPostAuthClaimsMatchPreAuthValues" TransformationMethod="AndClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="HasValidFederationId" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="IDPMatchesPreAuthIDP" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="PostAuthClaimsMatchPreAuthValues" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CopyPreAuthObjectIdToObjectId" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthObjectId" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="objectId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CopyFoundUserObjectIdToObjectId" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="foundUserObjectId" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="objectId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateErrorDetailsMessage_FederationId" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="federationId" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="FederationId: {0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationID" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateErrorDetailsMessage_PreAuthManagedUsername" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthManagedUsername" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="SignInName: {0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthManagedUsername" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateErrorDetailsMessage_PreAuthIDP" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="preAuthIDP" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="IDP: {0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateErrorDetailsMessage_CorrelationId" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="CorrelationId" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="CorrelationId: {0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.error">
+                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:globalexception:1.1.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Error page</Item>
+                </Metadata>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.selfAsserted.UserNotFoundError">
+                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">User Not Found Message</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfAsserted.UserNotFoundError.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.selfAsserted.UserMismatchError">
+                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">User Mismatch Message</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfAsserted.UserMismatchError.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.selfAsserted.IDPMismatchError">
+                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">IDP Mismatch Message</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfAsserted.IDPMismatchError.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+
+            <LocalizedResources Id="api.selfAsserted.UserNotFoundError.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="initial_intro">User Not Found</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="ErrorDetailsMessage" StringId="DisplayName">
+                        Your account was not found in our directory. Please contact your IT department or your Ecolab partner to gain access.
+                    </LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+
+            <LocalizedResources Id="api.selfAsserted.UserMismatchError.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="initial_intro">Account Mismatch Error</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="ErrorDetailsMessage" StringId="DisplayName">
+                        The SSO claims that we received do not match the email address you provided. Try signing out of your identity provider and trying again.
+                    </LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+
+            <LocalizedResources Id="api.selfAsserted.IDPMismatchError.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="initial_intro">IDP Mismatch Error</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="ErrorDetailsMessage" StringId="DisplayName">
+                        An account was found, but it does not belong to the Identity Provider that you logged in with.
+                    </LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+    </BuildingBlocks>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Application Insights</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AppInsights-Common">
+                    <DisplayName>Application Insights</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="InstrumentationKey">4c06f918-ec06-4809-aa8c-85420b29a9b2</Item>
+                        <Item Key="DeveloperMode">false</Item>
+                        <Item Key="DisableTelemetry ">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventTimestamp" PartnerClaimType="{property:EventTimestamp}" DefaultValue="{Context:DateTimeInUtc}" />
+                        <InputClaim ClaimTypeReferenceId="PolicyId" PartnerClaimType="{property:PolicyId}" DefaultValue="{Policy:PolicyId}" />
+                        <InputClaim ClaimTypeReferenceId="CorrelationId" PartnerClaimType="{property:CorrelationId}" DefaultValue="{Context:CorrelationId}" />
+                        <InputClaim ClaimTypeReferenceId="Culture" PartnerClaimType="{property:Culture}" DefaultValue="{Culture:RFC5646}" />
+                    </InputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.03-AppInsights-AssertionReceived">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="AssertionReceived" />
+                        <InputClaim ClaimTypeReferenceId="FederationId" PartnerClaimType="{property:FederationId}" />
+                        <InputClaim ClaimTypeReferenceId="jit_company" PartnerClaimType="{property:company}" />
+                        <InputClaim ClaimTypeReferenceId="jit_country" PartnerClaimType="{property:country}" />
+                        <InputClaim ClaimTypeReferenceId="jit_language" PartnerClaimType="{property:language}" />
+                        <InputClaim ClaimTypeReferenceId="jit_culture" PartnerClaimType="{property:culture}" />
+                        <InputClaim ClaimTypeReferenceId="jit_currency" PartnerClaimType="{property:currency}" />
+                        <InputClaim ClaimTypeReferenceId="jit_timezone" PartnerClaimType="{property:timezone}" />
+                        <InputClaim ClaimTypeReferenceId="jit_externalid" PartnerClaimType="{property:externalid}" />
+                        <InputClaim ClaimTypeReferenceId="jit_rolename" PartnerClaimType="{property:rolename}" />
+                        <InputClaim ClaimTypeReferenceId="jit_unitnumber" PartnerClaimType="{property:unitnumber}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.06-AppInsights-UserMismatchError">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="UserMismatchError" />
+                        <InputClaim ClaimTypeReferenceId="PreAuthManagedUsername" PartnerClaimType="{property:preAuthManagedUsername}" />
+                        <InputClaim ClaimTypeReferenceId="FederationId" PartnerClaimType="{property:federationId}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.11-AppInsights-IDPMismatchError">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="IDPMismatchError" />
+                        <InputClaim ClaimTypeReferenceId="PreAuthManagedUsername" PartnerClaimType="{property:preAuthManagedUsername}" />
+                        <InputClaim ClaimTypeReferenceId="PreAuthIDP" PartnerClaimType="{property:preAuthIDP}" />
+                        <InputClaim ClaimTypeReferenceId="FederationId" PartnerClaimType="{property:federationId}" />
+                        <!-- TODO: Add relevant info here -->
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.14-AppInsights-UserNotFoundError">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="UserNotFoundError" />
+                        <!-- TODO: Add relevant info here -->
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02-01.02-AppInsights-CreatedUser">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="CreatedUser" />
+                        <InputClaim ClaimTypeReferenceId="alternativeSecurityId" PartnerClaimType="{property:alternativeSecurityId}" />
+                        <InputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="{property:userPrincipalName}" />
+                        <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="{property:givenName}" />
+                        <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="{property:surname}" />
+                        <InputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="{property:displayName}" />
+                        <InputClaim ClaimTypeReferenceId="federationId" PartnerClaimType="{property:extension_ManagedUsername}" />
+                        <InputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="{property:extension_IdP}" />
+                        <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="{property:objectId}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Error Conditions </DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Step-SJ02.15-UserNotFoundError">
+                    <DisplayName>User Not Found Error</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfAsserted.UserNotFoundError</Item>
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_FederationId" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_PreAuthIDP" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_CorrelationId" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationId" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationId" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.07-UserMismatchError">
+                    <DisplayName>User Mismatch Error</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfAsserted.UserMismatchError</Item>
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_PreAuthManagedUsername" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_FederationId" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_CorrelationId" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthManagedUsername" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationID" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthManagedUsername" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationID" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.12-IDPMismatchError">
+                    <DisplayName>IDP Mismatch Error</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfAsserted.IDPMismatchError</Item>
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_FederationId" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_PreAuthIDP" />
+                        <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_CorrelationId" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationID" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+                        <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_FederationId" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+                        <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Technical Profiles</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Step-SJ02.01-PopulateIdentityProvidersCollection">
+                    <DisplayName>Populate Identity Providers Collection</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="identityProviders" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="AddPreAuthIDPToIdentityProvidersCollection" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.04-ValidateClaimsAgainstPreAuthValues">
+                    <DisplayName>Validate Claims Against Pre Auth Values</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="PostAuthClaimsMatchPreAuthValues" DefaultValue="False" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CompareFederationIdWithPreAuthManagedUsername" />
+                        <OutputClaimsTransformation ReferenceId="CompareFederationIdWithPreAuthAltFedID" />
+                        <OutputClaimsTransformation ReferenceId="CompareIDPWithPreAuthIDP" />
+                        <OutputClaimsTransformation ReferenceId="CheckIfHasValidFederationId" />
+                        <OutputClaimsTransformation ReferenceId="CheckIfHasInvalidFederationId" />
+                        <OutputClaimsTransformation ReferenceId="CheckIfInValidFedIDButValidIDP" />
+                        <OutputClaimsTransformation ReferenceId="CheckIfCanSetUpAltFedID" />
+                        <OutputClaimsTransformation ReferenceId="CheckIfPostAuthClaimsMatchPreAuthValues" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <!-- https://stackoverflow.com/questions/49923615/azure-ad-b2c-password-reset-policy-without-email-verification-step -->
+                <!-- SSPR password management using separate screens for verify and write -->
+                <TechnicalProfile Id="Step-SJ02.05-UserInteraction-VerifyEmailUsingOTP">
+                    <DisplayName>Verify Email using signInName</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.verifyemail</Item>
+                        <Item Key="UserMessageIfClaimsTransformationBooleanValueIsNotEqual">Your account cannot be verified please try again.</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" DefaultValue="" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="Verified.Email" Required="true" />
+                        <!-- <OutputClaim ClaimTypeReferenceId="federationId"/> -->
+                        <!-- <OutputClaim ClaimTypeReferenceId="objectId"/> -->
+                    </OutputClaims>
+                    <!-- <ValidationTechnicalProfiles> </ValidationTechnicalProfiles> -->
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.08-PopulateObjectIdWithValidPreAuthObjectId">
+                    <DisplayName>Copy preAuthObjectId to objectId</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyPreAuthObjectIdToObjectId" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.13-PopulateObjectIdWithFoundUserObjectId">
+                    <DisplayName>Copy preAuthObjectId to objectId</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyFoundUserObjectIdToObjectId" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ02.09-UserReadUsingAlternativeSecurityId-NoError">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="AlternativeSecurityId" PartnerClaimType="alternativeSecurityId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="false" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <!-- <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" /> -->
+                    <!--
+                    <Metadata>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                    </Metadata>
+                    <IncludeTechnicalProfile ReferenceId="AAD-UserReadUsingAlternativeSecurityId" />
+                    -->
+                </TechnicalProfile>
+
+                <!-- Modified to look up user by ManagedUsername using the federationId from the inbound claims -->
+                <TechnicalProfile Id="Step-SJ02.10-UserReadUsingManagedUsername-NoError">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="federationId" PartnerClaimType="extension_ManagedUsername" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <!-- we can NOT set the object id here because we still need to validate -->
+                        <OutputClaim ClaimTypeReferenceId="foundUserObjectId" PartnerClaimType="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="extension_IdP" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="false" />
+                        <!-- <OutputClaim ClaimTypeReferenceId="CorrelationID" DefaultValue="{Context:CorrelationId}" AlwaysUseDefaultValue="true" /> -->
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CompareIDPWithPreAuthIDP" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <!-- <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" /> -->
+                </TechnicalProfile>
+
+                <!-- This Tech profile is mainly to update the alternate security ID of a first time federated user now that we have the object ID from their directory -->
+                <TechnicalProfile Id="Step-SJ02.16-UpdateFirstTimeFederatedAccount">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">This account has not been authorized for creation.</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <!-- if you dont specify a PartnerClaimType it will assume they are the same.   -->
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="alternativeSecurityId" />
+                        <!-- <PersistedClaim ClaimTypeReferenceId="extension_isFirstTime" AlwaysUseDefaultValue="true" DefaultValue="false" /> -->
+                        <PersistedClaim ClaimTypeReferenceId="extension_isFederated" AlwaysUseDefaultValue="true" DefaultValue="true" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isLocal" AlwaysUseDefaultValue="true" DefaultValue="false" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isEligibleToConvert" AlwaysUseDefaultValue="true" DefaultValue="false" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_IdP" />
+                        <!-- commented out 9/17/2024... not sure why this is here
+                        <PersistedClaim ClaimTypeReferenceId="newPassword" PartnerClaimType="password" />
+                        <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration, DisableStrongPassword" />
+                        -->
+                        <PersistedClaim ClaimTypeReferenceId="federationId" PartnerClaimType="extension_AltFedID" DefaultValue="false" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <!-- <OutputClaim ClaimTypeReferenceId="newUser" AlwaysUseDefaultValue="true" DefaultValue="true" /> -->
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>JIT</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SJ02-01.01-CreateUser">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+                        <InputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
+                        <InputClaimsTransformation ReferenceId="CreateOtherMailsFromEmail" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="AlternativeSecurityId" PartnerClaimType="alternativeSecurityId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="alternativeSecurityId" />
+                        <PersistedClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <PersistedClaim ClaimTypeReferenceId="givenName" />
+                        <PersistedClaim ClaimTypeReferenceId="surname" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                        <PersistedClaim ClaimTypeReferenceId="otherMails" />
+                        <PersistedClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" />
+                        <PersistedClaim ClaimTypeReferenceId="federationId" PartnerClaimType="extension_ManagedUsername" />
+                        <PersistedClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="extension_IdP" />
+                        <PersistedClaim ClaimTypeReferenceId="mailNickName" AlwaysUseDefaultValue="true" DefaultValue="unknown" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isFirstTime" AlwaysUseDefaultValue="true" DefaultValue="true" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isFederated" AlwaysUseDefaultValue="true" DefaultValue="true" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isLocal" AlwaysUseDefaultValue="true" DefaultValue="false" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isEligibleToConvert" AlwaysUseDefaultValue="true" DefaultValue="false" />
+                        <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration, DisableStrongPassword" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="userWasCreated" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SJ02-01.03-UpdateUser">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="givenName" />
+                        <PersistedClaim ClaimTypeReferenceId="surname" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+    <SubJourneys>
+        <SubJourney Id="SubJourney-2-AuthenticateUserFederated" Type="Call">
+            <!-- subjourney for federation partners -->
+            <!-- this step adds the required claims that are referenced in subsequent steps. it creates blank values that will be overwritten by the subjourney-->
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="PopulateIdentityProvidersCollection" TechnicalProfileReferenceId="Step-SJ02.01-PopulateIdentityProvidersCollection" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="2" Type="InvokeSubJourney">
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="FederationPartnersSelection" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-AssertionReceived" TechnicalProfileReferenceId="Step-SJ02.03-AppInsights-AssertionReceived" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- We can validate the claims we received from the IDP against the pre-auth lookup (if applicable) -->
+                <!-- TODO: Validate the IDP as well! -->
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- only run if preAuthObjectId exists -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>preAuthObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ValidateClaimsAgainstPreAuthValues" TechnicalProfileReferenceId="Step-SJ02.04-ValidateClaimsAgainstPreAuthValues" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if it is the user's first time, the federation id doesn't match pre-auth, but the IDP does match,
+                    validate with OTP so we can set up an altFedID -->
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- only if preAuthObjectId exists, pre-auth mismatch, and is first time -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>preAuthObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>PostAuthClaimsMatchPreAuthValues</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>CanSetUpAltFedID</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="VerifyEmailUsingOTP" TechnicalProfileReferenceId="Step-SJ02.05-UserInteraction-VerifyEmailUsingOTP" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if we haven't matched the incoming claims with the pre-auth values and this isn't their first time, we need to throw an error -->
+                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- only if preAuthObjectId exists, pre-auth mismatch, and not first time -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>preAuthObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>PostAuthClaimsMatchPreAuthValues</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>CanSetUpAltFedID</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>ignorePreAuthSignInName</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-UserMismatchError" TechnicalProfileReferenceId="Step-SJ02.06-AppInsights-UserMismatchError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- only if preAuthObjectId exists, pre-auth mismatch, and not first time -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>preAuthObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>PostAuthClaimsMatchPreAuthValues</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>CanSetUpAltFedID</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>ignorePreAuthSignInName</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ShowAccountMissmatchError" TechnicalProfileReferenceId="Step-SJ02.07-UserMismatchError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if we got this far we can set the objectId to the preAuthObjectId -->
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>preAuthObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>ignorePreAuthSignInName</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="PopulateObjectIdWithValidPreAuthObjectId" TechnicalProfileReferenceId="Step-SJ02.08-PopulateObjectIdWithValidPreAuthObjectId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- First we read by alternative security id -->
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="Step-SJ02.09-UserReadUsingAlternativeSecurityId-NoError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- If the user was not found using alternative security id, we try again with managed username using the federationId we received from the IDP -->
+                <OrchestrationStep Order="10" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadUsingManagedUsername" TechnicalProfileReferenceId="Step-SJ02.10-UserReadUsingManagedUsername-NoError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- if the user was found but the IDP doesn't match, throw a missmatch error -->
+                <!-- TODO: need to make sure this isn't bypassable by refreshing the page... !!! -->
+                <OrchestrationStep Order="11" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>foundUserObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>IDPMatchesPreAuthIDP</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-IDPMismatchError" TechnicalProfileReferenceId="Step-SJ02.11-AppInsights-IDPMismatchError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="12" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>foundUserObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>IDPMatchesPreAuthIDP</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ShowAccountIDPMissmatchError" TechnicalProfileReferenceId="Step-SJ02.12-IDPMismatchError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="13" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>foundUserObjectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>IDPMatchesPreAuthIDP</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="PopulateObjectIdWithValidFoundUserObjectId" TechnicalProfileReferenceId="Step-SJ02.13-PopulateObjectIdWithFoundUserObjectId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- JIT! -->
+                <!-- runs if jitEnabled is set to true on the federation AND allowJit parameter was provided -->
+                <OrchestrationStep Order="14" Type="InvokeSubJourney">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>jitEnabled</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>jitEnabled</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>allowJit</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>allowJit</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="SubJourney-2-1-JIT" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <!-- if we don't know who the person is at this time, it's time to throw an error -->
+                <OrchestrationStep Order="15" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-UserNotFoundError" TechnicalProfileReferenceId="Step-SJ02.14-AppInsights-UserNotFoundError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="16" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ShowUserNotFoundError" TechnicalProfileReferenceId="Step-SJ02.15-UserNotFoundError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- update first time federated users with IdP issuerAssignedId -->
+                <OrchestrationStep Order="17" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- skip if not first time -->
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUpdateFirstTimeFederatedAccount" TechnicalProfileReferenceId="Step-SJ02.16-UpdateFirstTimeFederatedAccount" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+            </OrchestrationSteps>
+        </SubJourney>
+
+        <SubJourney Id="SubJourney-2-1-JIT" Type="Call">
+            <OrchestrationSteps>
+                <!-- always runs for JIT users -->
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- new user -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="CreateUser" TechnicalProfileReferenceId="SJ02-01.01-CreateUser" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <!-- new user -->
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-CreatedUser" TechnicalProfileReferenceId="Step-SJ02-01.02-AppInsights-CreatedUser" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                <Preconditions>
+                    <!-- existing user -->
+                    <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                        <Value>objectId</Value>
+                        <Action>SkipThisOrchestrationStep</Action>
+                    </Precondition>
+                </Preconditions>
+                <ClaimsExchanges>
+                    <ClaimsExchange Id="UpdateUser" TechnicalProfileReferenceId="SJ02-01.03-UpdateUser" />
+                </ClaimsExchanges>
+            </OrchestrationStep>
+            </OrchestrationSteps>
+        </SubJourney>
+
+    </SubJourneys>
+
+</TrustFrameworkPolicy> 

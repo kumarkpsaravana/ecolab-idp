@@ -1,0 +1,98 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+  PolicySchemaVersion="0.3.0.0" 
+  TenantId="ecolabb2c.onmicrosoft.com" 
+  PolicyId="B2C_1A_BillTrust_SAML_SignIn" 
+  PublicPolicyUri="http://ecolabb2c.onmicrosoft.com/B2C_1A_BillTrust_SAML_SignIn" 
+  TenantObjectId="278a8e42-9a77-442c-899b-1e321202cd04" 
+  DeploymentMode="Development" 
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+  <BasePolicy>
+    <TenantId>ecolabb2c.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Connect_Extensions</PolicyId>
+  </BasePolicy>
+
+  <BuildingBlocks>
+    <ClaimsSchema>
+        <ClaimType Id="CustomerGuid">
+            <DisplayName>Customer Guid</DisplayName>
+            <DataType>string</DataType>
+        </ClaimType>
+
+        <ClaimType Id="yes">
+            <DisplayName>yes</DisplayName>
+            <DataType>string</DataType>
+        </ClaimType>
+
+        <ClaimType Id="active">
+            <DisplayName>active</DisplayName>
+            <DataType>string</DataType>
+        </ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+
+    <!-- the SAML claims resolvers need to happen in this file because otherwise it throws an error for OIDC flows -->
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Utilities</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Step-02-Utilities-PolicyClaimsToClaimsBag">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="appEntityId" DefaultValue="{SAML:Issuer}" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+
+  <!-- overwrite the default token issuer for the user journey -->
+  <UserJourneys>
+    <UserJourney Id="SignIn" DefaultCpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer">
+    </UserJourney>
+  </UserJourneys>
+
+  <!-- update the actual token issuer in the subjourney -->
+  <SubJourneys>
+    <SubJourney Id="SubJourney-Final-IssueToken" Type="Transfer">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-Saml2AssertionIssuer" />
+      </OrchestrationSteps>
+    </SubJourney>
+  </SubJourneys>
+
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignIn" />
+    <UserJourneyBehaviors>
+      <SingleSignOn Scope="Tenant" />
+      <SessionExpiryType>Absolute</SessionExpiryType>
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
+
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="70f1195e-9c7c-4140-a298-db527d357c99" DeveloperMode="false" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <ScriptExecution>Allow</ScriptExecution>
+    </UserJourneyBehaviors>
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="SAML2"/>      
+      <Metadata>
+        <Item Key="IdpInitiatedProfileEnabled">true</Item>
+      </Metadata>
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="email"/>
+        <OutputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="UN"/>
+        <OutputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="EA"/>
+        <OutputClaim ClaimTypeReferenceId="CustomerGuid" PartnerClaimType="CG" DefaultValue="29a8dc05-dd09-4a14-975c-ff29f0d418f0" AlwaysUseDefaultValue="true"/>
+        <!--<OutputClaim ClaimTypeReferenceId="extension_AccountNumber" PartnerClaimType="AN"/>-->
+        <OutputClaim ClaimTypeReferenceId="yes" PartnerClaimType="DD" DefaultValue="Y" AlwaysUseDefaultValue="true"/>
+        <OutputClaim ClaimTypeReferenceId="yes" PartnerClaimType="EC" DefaultValue="Y" AlwaysUseDefaultValue="true"/>
+        <OutputClaim ClaimTypeReferenceId="yes" PartnerClaimType="EN" DefaultValue="Y" AlwaysUseDefaultValue="true"/>
+        <OutputClaim ClaimTypeReferenceId="yes" PartnerClaimType="MP" DefaultValue="Y" AlwaysUseDefaultValue="true"/>
+        <OutputClaim ClaimTypeReferenceId="active" PartnerClaimType="SS" DefaultValue="Active" AlwaysUseDefaultValue="true"/>
+        <OutputClaim ClaimTypeReferenceId="accountNumber" PartnerClaimType="AN"/>
+        <OutputClaim ClaimTypeReferenceId="PolicyId"/>
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="email" ExcludeAsClaim="true" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

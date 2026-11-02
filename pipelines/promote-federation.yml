@@ -1,0 +1,83 @@
+trigger: none  # Manual trigger only
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  sourceBranch: 'stage'
+  targetBranch: 'prod'
+
+steps:
+  - checkout: self
+    persistCredentials: true
+    fetchDepth: 0
+
+  - task: PowerShell@2
+    displayName: 'Promote federation files from stage to prod'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: 'inline'
+      script: |
+        # --- Configure git ---
+        git config user.email "azure-pipeline@ecolab.com"
+        git config user.name "Azure Pipeline"
+
+        # --- Create promote branch off prod ---
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $promoteBranch = "promote/federation-$timestamp"
+
+        git fetch origin $(sourceBranch) $(targetBranch)
+        git checkout -b $promoteBranch origin/$(targetBranch)
+
+        # --- Checkout federation files from stage ---
+        $filesToPromote = @(
+            "B2C_1A_Connect_Federations.xml",
+            "Environments/Prod/B2C_1A_Connect_Federations.xml",
+            "appsettings.json"
+        )
+
+        foreach ($file in $filesToPromote) {
+            Write-Host "Checking out $file from origin/$(sourceBranch)"
+            git checkout "origin/$(sourceBranch)" -- $file
+        }
+
+        # --- Check for changes ---
+        $changes = git status --porcelain
+        if (-not $changes) {
+            Write-Host "##[warning]No changes to promote - federation files are already in sync with prod."
+            exit 0
+        }
+
+        Write-Host "Changes detected:"
+        git diff --stat
+
+        # --- Commit and push ---
+        git add $filesToPromote
+        git commit -m "Promote federation files from stage to prod"
+        git push origin $promoteBranch
+
+        # --- Create PR via Azure DevOps REST API ---
+        $org = "ecolab"
+        $project = "Identity"
+        $repo = "ID-B2C-HomeRealmDiscovery-Policy"
+
+        $uri = "https://dev.azure.com/$org/$project/_apis/git/repositories/$repo/pullrequests?api-version=7.1"
+
+        $body = @{
+            sourceRefName = "refs/heads/$promoteBranch"
+            targetRefName = "refs/heads/$(targetBranch)"
+            title         = "Promote federation files to prod ($timestamp)"
+            description   = "Automated promotion of federation files from ``stage`` to ``prod``.`n`nFiles:`n- B2C_1A_Connect_Federations.xml`n- Environments/Prod/B2C_1A_Connect_Federations.xml`n- appsettings.json"
+        } | ConvertTo-Json
+
+        $headers = @{
+            Authorization  = "Bearer $env:SYSTEM_ACCESSTOKEN"
+            "Content-Type" = "application/json"
+        }
+
+        $response = Invoke-RestMethod -Uri $uri -Method Post -Body $body -Headers $headers
+        $prUrl = "$($response.repository.webUrl)/pullrequest/$($response.pullRequestId)"
+
+        Write-Host "##[section]PR created: $prUrl"
+        Write-Host "##vso[task.setvariable variable=PR_URL]$prUrl"

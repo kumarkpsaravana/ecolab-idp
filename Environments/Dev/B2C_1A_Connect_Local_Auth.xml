@@ -1,0 +1,1022 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
+    PolicySchemaVersion="0.3.0.0"
+    TenantId="wintersnowb2c.onmicrosoft.com"
+    PolicyId="B2C_1A_Connect_Local_Auth_dev"
+    PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_Connect_Local_Auth_dev"
+    TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97"
+    DeploymentMode="Development"
+    UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+
+    <BasePolicy>
+        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_Connect_Federated_Auth_dev</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <!-- User account attributes -->
+            <ClaimType Id="extension_ForcePasswordChange">
+                <DisplayName>Force a password change?</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <!-- others -->
+            <ClaimType Id="ssprControl">
+                <DisplayName>ssprControl</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Constant of SSPR</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="specialControls">
+                <DisplayName>specialControls</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>Controls SSPR and Convert options</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="convertControl">
+                <DisplayName>convertControl</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Constant of Convert</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="identityProviders">
+                <DisplayName>IdentityProviders</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>User identity providers</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="isPasswordResetFlow">
+                <DisplayName>Indicates whether user resetting the password</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Add help text here</AdminHelpText>
+            </ClaimType>
+
+            <ClaimType Id="isConvertToWorkAccountFlow">
+                <DisplayName>Indicates whether user is converting to work account</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Add help text here</AdminHelpText>
+            </ClaimType>
+
+            <ClaimType Id="dummyfalse">
+                <DisplayName>Used to output a False</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="systemDateTime">
+                <DisplayName>Current Date time</DisplayName>
+                <DataType>dateTime</DataType>
+            </ClaimType>
+
+            <ClaimType Id="otp">
+                <DisplayName>One Time Passcode</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="verificationCode">
+                <DisplayName>Verification code</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="readOnlyEmail">
+                <DisplayName>Email Address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your email address</UserHelpText>
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="sendGridReqBody">
+                <DisplayName>SendGrid Request Body</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="bearerToken">
+                <DisplayName>Bearer Token</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="otpVerified">
+                <DisplayName>OTP Verified</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="emailVerified">
+                <DisplayName>Email Verified</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="templateId">
+                <DisplayName>Email Template ID</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="EventType">
+                <DisplayName>Event type</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="LanguageName">
+                <DisplayName>Language Name</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="GenerateSendGridRequestBody" TransformationMethod="GenerateJson">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="0.email.recipients.toAddresses.0" />
+                    <InputClaim ClaimTypeReferenceId="otp" TransformationClaimType="0.email.dynamicFields.otp" />
+                    <InputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="0.email.dynamicFields.email" />
+                    <InputClaim ClaimTypeReferenceId="templateId" TransformationClaimType="0.email.templateId" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="0.source" DataType="string" Value="B2C" />
+                    <InputParameter Id="0.notificationId" DataType="string" Value="N/A" />
+                    <InputParameter Id="0.serviceAccountName" DataType="string" Value="ETS-Identity-Platforms-B2C-NonProd" />
+                    <InputParameter Id="0.notificationTypes.0" DataType="string" Value="EMAIL" />
+                    <InputParameter Id="0.notificationChannel" DataType="string" Value="SENDGRID" />
+                    <InputParameter Id="0.email.replyName" DataType="string" Value="Ecolab" />
+                    <InputParameter Id="0.email.fromName" DataType="string" Value="Ecolab" />
+                    <InputParameter Id="0.email.fromAddress" DataType="string" Value="no-reply@ecolab.com" />
+                    <!-- <InputParameter Id="0.email.priority" DataType="string" Value="CRITICAL" /> -->
+                    <InputParameter Id="0.email.subject" DataType="string" Value="N/A" />
+                    <InputParameter Id="0.email.body.content" DataType="string" Value="N/A" />
+                    <InputParameter Id="0.email.body.contentType" DataType="string" Value="text/html" />
+                    <!-- <InputParameter Id="0.email.dynamicFields.subject" DataType="string" Value="N/A" /> -->
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="sendGridReqBody" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="setTemplateIdUsingLanguageName" TransformationMethod="LookupValue">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="LanguageName" TransformationClaimType="inputParameterId" />
+                </InputClaims>
+                <InputParameters>
+                    <!-- translated languages -->
+                    <InputParameter Id="en" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="es" DataType="string" Value="d-4452af2190514dde9c8fc120682f3637" />
+                    <InputParameter Id="fr" DataType="string" Value="d-5d28fee0030b4829b0b007cc43acaeec" />
+                    <InputParameter Id="bg" DataType="string" Value="d-9b0ca807ae824d13af2960518a0fa0a7" />
+                    <!-- to do: add support (defaulting to english for now) -->
+                    <InputParameter Id="pt" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ko" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="th" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="vi" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ja" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="zh" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="de" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="it" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="nl" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ru" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="pl" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="tr" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="sv" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="da" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="fi" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="no" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="cs" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="sk" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="hu" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ro" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="uk" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="el" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="he" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ar" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="hi" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="id" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+                    <InputParameter Id="ms" DataType="string" Value="d-6f314113b9f64bae9d6cd7612cdf41db" />
+
+                    <InputParameter Id="errorOnFailedLookup" DataType="boolean" Value="false" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="templateId" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="AddSSPRToSpecialControlsCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="ssprControl" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="specialControls" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="specialControls" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="AddConvertToSpecialControlsCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="convertControl" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="specialControls" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="specialControls" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="SetUpForcePasswordChange" TransformationMethod="OrClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="extension_ForcePasswordChange" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateIdentityProvidersCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <!-- <InputClaim ClaimTypeReferenceId="domainParameter" TransformationClaimType="item" /> -->
+                    <InputClaim ClaimTypeReferenceId="extension_IdP" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateRandomPassword" TransformationMethod="CreateRandomString">
+                <InputParameters>
+                    <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="newPassword" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+        </ClaimsTransformations>
+
+        <DisplayControls>
+            <DisplayControl Id="Step-VC01-OTPVerificationControl" UserInterfaceControlType="VerificationControl">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                    <!-- for app insights (disabled) -->
+                    <!-- <InputClaim ClaimTypeReferenceId="EventType"/>
+                    <InputClaim ClaimTypeReferenceId="EventTimestamp"/>
+                    <InputClaim ClaimTypeReferenceId="PolicyId"/>
+                    <InputClaim ClaimTypeReferenceId="CorrelationId"/>
+                    <InputClaim ClaimTypeReferenceId="Culture"/> -->
+                </InputClaims>
+                <DisplayClaims>
+                    <DisplayClaim ClaimTypeReferenceId="readOnlyEmail" Required="true" />
+                    <DisplayClaim ClaimTypeReferenceId="verificationCode" ControlClaimType="VerificationCode" Required="true" />
+                </DisplayClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                </OutputClaims>
+                <Actions>
+                    <Action Id="SendCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.01-SendGrid-GetAccessToken" />
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.02-SendGrid-SetTemplateId" />
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.03-SendGrid-GenerateCode" />
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.04-SendGrid-SendOTPEmail" />
+                            <!-- this part is not currently working for some reason so we need to disable for now -->
+                            <!-- <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.05-AppInsights-OTPCodeSent" /> -->
+                        </ValidationClaimsExchange>
+                    </Action>
+                    <Action Id="VerifyCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="Step-VC01.06-SendGrid-VerifyCode" />
+                        </ValidationClaimsExchange>
+                    </Action>
+                </Actions>
+            </DisplayControl>
+        </DisplayControls>
+
+    </BuildingBlocks>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Technical Profiles</DisplayName>
+            <TechnicalProfiles>
+                <!-- set claim to display Forgot Password? -->
+                <TechnicalProfile Id="Step-SJ01.01-Utilities-SetControlToDisplayForgotPassword">
+                    <DisplayName>Enable Forgot Password</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="ssprControl" DefaultValue="SSPR" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="AddSSPRToSpecialControlsCollection" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <!-- set claim to display convert to work account -->
+                <TechnicalProfile Id="Step-SJ01.02-Utilities-SetControlToDisplayConvertToWorkAccount">
+                    <DisplayName>Enable Convert</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="convertControl" DefaultValue="Convert" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="AddConvertToSpecialControlsCollection" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ01.03-SetSUPWIsFirstTimeToNo">
+                    <DisplayName>Set Up SUPW User</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ01.04-SetOTPOIsFirstTimeToYes">
+                    <DisplayName>Set Up SUPW User</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ01.05-SetIsFirstTimeForOTPWithForcePasswordChangeTrue">
+                    <DisplayName>Set Up SUPW User</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="extension_ForcePasswordChange" DefaultValue="false" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="SetUpForcePasswordChange" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <!-- This technical profile uses a validation technical profile to authenticate the user. -->
+                <TechnicalProfile Id="Step-SJ01.06-UserInteraction-PromptForPassword">
+                    <DisplayName>Local Account Signin</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="SignUpTarget">SignUpWithLogonEmailExchange</Item>
+                        <Item Key="setting.operatingMode">Email</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="setting.showSignupLink">false</Item>
+                        <Item Key="setting.forgotPasswordLinkLocation">None</Item>
+                        <Item Key="setting.showCancelButton">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="email" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="password" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="Step-10-UserInteraction-ValidatePassword" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <!-- screen option for SSPR -->
+                <TechnicalProfile Id="Step-SJ01.07-UserInteraction-DisplayAndRespondToForgotPassword">
+                    <DisplayName>Forgot your password?</DisplayName>
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username was not found in our system.</Item>
+                        <Item Key="ClaimTypeOnWhichToEnable">specialControls</Item>
+                        <Item Key="ClaimValueOnWhichToEnable">SSPR</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signinName" PartnerClaimType="extension_ManagedUsername" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isPasswordResetFlow" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                        <!-- set the in-memory variables to treat user as first time federated but do not persist until they actually succeed at converting -->
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <EnabledForUserJourneys>OnItemExistenceInStringCollectionClaim</EnabledForUserJourneys>
+                </TechnicalProfile>
+
+                <!-- screen option for convert to work account-->
+                <TechnicalProfile Id="Step-SJ01.07-UserInteraction-DisplayAndRespondToConvertToWorkAccount">
+                    <DisplayName>Convert To Work Account?</DisplayName>
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username was not found in our system.</Item>
+                        <Item Key="ClaimTypeOnWhichToEnable">specialControls</Item>
+                        <Item Key="ClaimValueOnWhichToEnable">Convert</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="extension_ManagedUsername" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isConvertToWorkAccountFlow" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                        <!-- set the in-memory variables to treat user as first time federated but do not persist until they actually succeed at converting -->
+                        <OutputClaim ClaimTypeReferenceId="extension_isLocal" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isFederated" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="extension_IdP" DefaultValue="Common" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateIdentityProvidersCollection" />
+                        <OutputClaimsTransformation ReferenceId="CreateRandomPassword" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <EnabledForUserJourneys>OnItemExistenceInStringCollectionClaim</EnabledForUserJourneys>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.01-SendGrid-GetAccessToken">
+                    <DisplayName>Retrieve SendGrid Access Token</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://login.microsoftonline.com/ecolab.com/oauth2/v2.0/token</Item>
+                        <Item Key="AuthenticationType">Basic</Item>
+                        <Item Key="SendClaimsIn">Form</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_MulesoftSendgridClientId" />
+                        <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_MulesoftSendgridClientSecret" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+                        <InputClaim ClaimTypeReferenceId="scope" DefaultValue="https://nalco.microsoftonline.com/74f6179a-81c8-47cf-8131-3a854dee93fb/.default" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.02-SendGrid-SetTemplateId">
+                    <DisplayName>set templateId based on language</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="LanguageName" DefaultValue="{Culture:LanguageName}" AlwaysUseDefaultValue="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="templateId" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="setTemplateIdUsingLanguageName" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.04-SendGrid-SendOTPEmail">
+                    <DisplayName>SendGrid API EndPoint</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://api-cloudhubcentral-st.ecolab.com/notification/v1/emails</Item>
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="ClaimUsedForRequestPayload">sendGridReqBody</Item>
+                        <Item Key="UseClaimAsBearerToken">bearerToken</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="GenerateSendGridRequestBody" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="templateId" />
+                        <InputClaim ClaimTypeReferenceId="sendGridReqBody" />
+                        <InputClaim ClaimTypeReferenceId="bearerToken" />
+                    </InputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.03-SendGrid-GenerateCode">
+                    <DisplayName>Generate one time password</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.OneTimePasswordProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="Operation">GenerateCode</Item>
+                        <Item Key="CodeExpirationInSeconds">1200</Item>
+                        <Item Key="CodeLength">8</Item>
+                        <Item Key="CharacterSet">0-9</Item>
+                        <Item Key="NumRetryAttempts">5</Item>
+                        <Item Key="NumCodeGenerationAttempts">30</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="identifier" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="otp" PartnerClaimType="otpGenerated" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.06-SendGrid-VerifyCode">
+                    <DisplayName>Verify OTP</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.OneTimePasswordProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="Operation">VerifyCode</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="identifier" />
+                        <InputClaim ClaimTypeReferenceId="verificationCode" PartnerClaimType="otpToVerify" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="otpVerified" Required="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ01.09-UserInteraction-VerifyEmailWithOTP">
+                    <DisplayName>Verify Email Address</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.verifyemail</Item>
+                        <Item Key="setting.showContinueButton">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                        <!-- <InputClaim ClaimTypeReferenceId="bearerToken" /> -->
+                    </InputClaims>
+                    <DisplayClaims>
+                        <DisplayClaim DisplayControlReferenceId="Step-VC01-OTPVerificationControl" />
+                    </DisplayClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                        <OutputClaim ClaimTypeReferenceId="emailVerified" DefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserReadUsingEmailAddress" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.08-AppInsights-OTPStarted">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="OTPStarted" />
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="{property:EmailAddress}" />
+                        <InputClaim ClaimTypeReferenceId="LanguageName" PartnerClaimType="{property:LanguageName}" DefaultValue="{Culture:LanguageName}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-VC01.10-AppInsights-OTPComplete">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="OTPComplete" />
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="{property:EmailAddress}" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+                </TechnicalProfile>
+
+                <!-- Modified to look up user by ManagedUsername using the federationId from the inbound claims -->
+                <TechnicalProfile Id="Step-SJ01.11-AAD-UserReadUsingManagedUsername-ReturningObjectId">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username was not found in our system.</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="extension_ManagedUsername" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-SJ01.12-SetUpSUPWUser">
+                    <DisplayName>Set Up SUPW User</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="extension_ForcePasswordChange" DefaultValue="false" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isFirstTime" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="SetUpForcePasswordChange" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <!-- collects and writes new password -->
+                <TechnicalProfile Id="Step-SJ01.13-UserInteraction-CollectAndWritePasswordUsingSignInName">
+                    <DisplayName>Change password (username)</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountpasswordreset</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                        <Item Key="setting.showContinueButton">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="Step-16a-AAD-UserWriteUsingSignInName" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Validation Technical Profiles</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Step-10-UserInteraction-ValidatePassword">
+                    <DisplayName>Local Account SignIn</DisplayName>
+                    <Protocol Name="OpenIdConnect" />
+                    <Metadata>
+                        <Item Key="client_id">a7a26628-97ab-421e-acab-3dabe89e022b</Item>
+                        <Item Key="IdTokenAudience">4e04f230-9ead-4e9c-a9b3-258843d05717</Item>
+
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username or password is incorrect</Item>
+                        <Item Key="UserMessageIfInvalidPassword">Your password is incorrect</Item>
+                        <Item Key="UserMessageIfOldPasswordUsed">Looks like you used an old password</Item>
+
+                        <Item Key="ProviderName">https://sts.windows.net/</Item>
+                        <Item Key="METADATA">https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration</Item>
+                        <Item Key="authorization_endpoint">https://login.microsoftonline.com/{tenant}/oauth2/token</Item>
+                        <Item Key="response_types">id_token</Item>
+                        <Item Key="response_mode">query</Item>
+                        <Item Key="scope">email openid</Item>
+
+                        <!-- Policy Engine Clients -->
+                        <Item Key="UsePolicyInRedirectUri">false</Item>
+                        <Item Key="HttpBinding">POST</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="a7a26628-97ab-421e-acab-3dabe89e022b" />
+                        <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="4e04f230-9ead-4e9c-a9b3-258843d05717" />
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="username" Required="true" />
+                        <InputClaim ClaimTypeReferenceId="password" Required="true" />
+                        <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="password" />
+                        <InputClaim ClaimTypeReferenceId="scope" DefaultValue="openid" />
+                        <InputClaim ClaimTypeReferenceId="nca" PartnerClaimType="nca" DefaultValue="1" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid" />
+                        <OutputClaim ClaimTypeReferenceId="tenantId" PartnerClaimType="tid" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
+                        <OutputClaim ClaimTypeReferenceId="surName" PartnerClaimType="family_name" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="upn" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Step-16a-AAD-UserWriteUsingSignInName">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <!-- changed this to False to allow password set for pre-created users -->
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="signInNames.emailAddress" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="signInName" PartnerClaimType="signInNames.emailAddress" />
+                        <PersistedClaim ClaimTypeReferenceId="newPassword" PartnerClaimType="password" />
+                        <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration, DisableStrongPassword" />
+                        <PersistedClaim ClaimTypeReferenceId="dummyfalse" PartnerClaimType="extension_isFirstTime" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                        <PersistedClaim ClaimTypeReferenceId="systemDateTime" PartnerClaimType="extension_LastLoginDateTime" />
+                        <PersistedClaim ClaimTypeReferenceId="dummyFalse" PartnerClaimType="extension_ForcePasswordChange" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <!-- <OutputClaim ClaimTypeReferenceId="newUser" PartnerClaimType="newClaimsPrincipalCreated" /> -->
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+
+    <SubJourneys>
+        <SubJourney Id="SubJourney-1-AuthenticateUserLocal" Type="Call">
+            <OrchestrationSteps>
+                <!-- if user is local and found set the control to display the SSPR -->
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if SUPW -->
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if OTPO -->
+                            <Value>extension_UsrType</Value>
+                            <Value>OTPO</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AAD-UserSetControlToDisplaySSPROption" TechnicalProfileReferenceId="Step-SJ01.01-Utilities-SetControlToDisplayForgotPassword" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if user is eligible to convert set the control to display the option to convert -->
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- skip if not eligible -->
+                            <Value>extension_isEligibleToConvert</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AAD-UserSetControlToDisplayOptionToConvert" TechnicalProfileReferenceId="Step-SJ01.02-Utilities-SetControlToDisplayConvertToWorkAccount" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if user is SUPW set IsFirstTime to false (for now) -->
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="CE-SetSUPWIsFirstTimeToNo" TechnicalProfileReferenceId="Step-SJ01.03-SetSUPWIsFirstTimeToNo" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if user is OTPO set IsFirstTime to false. I believe that this is how we determine if the user should do OTP or not -->
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Value>OTPO</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="CE-SetOTPOIsFirstTimeToNo" TechnicalProfileReferenceId="Step-SJ01.04-SetOTPOIsFirstTimeToYes" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- OTP only; if ForcePasswordChange is true, force password change -->
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- Skip if UsrType not equal to OTP -->
+                            <Value>extension_UsrType</Value>
+                            <Value>OTP</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_ForcePasswordChange</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- Skip if forcepassword change is not true -->
+                            <Value>extension_ForcePasswordChange</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SetIsFirstTimeForOTPIfForcePasswordChange" TechnicalProfileReferenceId="Step-SJ01.05-SetIsFirstTimeForOTPWithForcePasswordChangeTrue" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="6" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if First Time -->
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if SSPR is on query string set to True -->
+                            <Value>sspr</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsProviderSelections>
+                        <!-- Add SSPR and Convert Claims Providers -->
+                        <ClaimsProviderSelection TargetClaimsExchangeId="SSPR" />
+                        <ClaimsProviderSelection TargetClaimsExchangeId="ConvertToWorkAccount" />
+                        <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+                    </ClaimsProviderSelections>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="Step-SJ01.06-UserInteraction-PromptForPassword" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Run if the user has not signed in - there is no objectid which means they selected SSPR or Convert -->
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <!-- skip if there is an objectId - meaning the user authenticated in the prior step -->
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if first time -->
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <!-- skip if SSPR is on query string set to True -->
+                            <Value>sspr</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>OTPO</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>oktaMigrated</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SSPR" TechnicalProfileReferenceId="Step-SJ01.07-UserInteraction-DisplayAndRespondToForgotPassword" />
+                        <ClaimsExchange Id="ConvertToWorkAccount" TechnicalProfileReferenceId="Step-SJ01.07-UserInteraction-DisplayAndRespondToConvertToWorkAccount" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- start OTP steps -->
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>oktaMigrated</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-OTPStarted" TechnicalProfileReferenceId="Step-VC01.08-AppInsights-OTPStarted" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>oktaMigrated</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="VerifyEmail" TechnicalProfileReferenceId="Step-SJ01.09-UserInteraction-VerifyEmailWithOTP" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="10" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>oktaMigrated</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppInsights-OTPComplete" TechnicalProfileReferenceId="Step-VC01.10-AppInsights-OTPComplete" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+                <!-- end OTP steps -->
+
+                <OrchestrationStep Order="11" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- Skip if UsrType not equal to oktaMigrated -->
+                            <Value>extension_UsrType</Value>
+                            <Value>oktaMigrated</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ReadOktaMigratedUser" TechnicalProfileReferenceId="Step-SJ01.11-AAD-UserReadUsingManagedUsername-ReturningObjectId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- if the user is SUPW and has ForcePasswordChange=true, set IsFirstTime=true -->
+                <OrchestrationStep Order="12" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>extension_UsrType</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- Skip if UsrType not equal to SUPW -->
+                            <Value>extension_UsrType</Value>
+                            <Value>SUPW</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- Skip if forcepassword change is not true -->
+                            <Value>extension_ForcePasswordChange</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SetUpSUPWUser" TechnicalProfileReferenceId="Step-SJ01.12-SetUpSUPWUser" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- First time local user OR SSPR was passed on query string collect and write password -->
+                <OrchestrationStep Order="13" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <!-- skip if not FirstTime -->
+                            <Value>extension_isFirstTime</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_UsrType</Value>
+                            <Value>OTPO</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="NewCredentials" TechnicalProfileReferenceId="Step-SJ01.13-UserInteraction-CollectAndWritePasswordUsingSignInName" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+            </OrchestrationSteps>
+        </SubJourney>
+    </SubJourneys>
+
+</TrustFrameworkPolicy> 
