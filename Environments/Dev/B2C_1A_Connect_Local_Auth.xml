@@ -2,15 +2,15 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
     PolicySchemaVersion="0.3.0.0"
-    TenantId="wintersnowb2c.onmicrosoft.com"
+    TenantId="buildoncloudb2c.onmicrosoft.com"
     PolicyId="B2C_1A_Connect_Local_Auth_dev"
-    PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_Connect_Local_Auth_dev"
+    PublicPolicyUri="http://buildoncloudb2c.onmicrosoft.com/B2C_1A_Connect_Local_Auth_dev"
     TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97"
     DeploymentMode="Development"
     UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
     <BasePolicy>
-        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <TenantId>buildoncloudb2c.onmicrosoft.com</TenantId>
         <PolicyId>B2C_1A_Connect_Federated_Auth_dev</PolicyId>
     </BasePolicy>
 
@@ -471,7 +471,7 @@
                     <DisplayName>SendGrid API EndPoint</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ServiceUrl">https://api-cloudhubcentral-st.ecolab.com/notification/v1/emails</Item>
+                        <Item Key="ServiceUrl">https://tesdemo.free.beeceptor.com</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="ClaimUsedForRequestPayload">sendGridReqBody</Item>
@@ -625,8 +625,8 @@
                     <DisplayName>Local Account SignIn</DisplayName>
                     <Protocol Name="OpenIdConnect" />
                     <Metadata>
-                        <Item Key="client_id">a7a26628-97ab-421e-acab-3dabe89e022b</Item>
-                        <Item Key="IdTokenAudience">4e04f230-9ead-4e9c-a9b3-258843d05717</Item>
+                        <Item Key="client_id">514fb356-3e3a-4471-a121-6353d8c16d7b</Item>
+                        <Item Key="IdTokenAudience">7232c751-6592-426d-8c0c-e7352982e843</Item>
 
                         <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">Your username or password is incorrect</Item>
                         <Item Key="UserMessageIfInvalidPassword">Your password is incorrect</Item>
@@ -644,8 +644,8 @@
                         <Item Key="HttpBinding">POST</Item>
                     </Metadata>
                     <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="a7a26628-97ab-421e-acab-3dabe89e022b" />
-                        <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="4e04f230-9ead-4e9c-a9b3-258843d05717" />
+                        <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="514fb356-3e3a-4471-a121-6353d8c16d7b" />
+                        <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="7232c751-6592-426d-8c0c-e7352982e843" />
                         <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="username" Required="true" />
                         <InputClaim ClaimTypeReferenceId="password" Required="true" />
                         <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="password" />

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" TenantId="wintersnowb2c.onmicrosoft.com" PolicyId="B2C_1A_Domain_Hint_dev" PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/Domain_Hint_dev">
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" TenantId="buildoncloudb2c.onmicrosoft.com" PolicyId="B2C_1A_Domain_Hint_dev" PublicPolicyUri="http://buildoncloudb2c.onmicrosoft.com/Domain_Hint_dev">
 
     <BasePolicy>
-        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <TenantId>buildoncloudb2c.onmicrosoft.com</TenantId>
         <PolicyId>B2C_1A_Connect_Federations_dev</PolicyId>
     </BasePolicy>
 
@@ -220,7 +220,7 @@
                     <DisplayName>Application Insights</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="InstrumentationKey">4c06f918-ec06-4809-aa8c-85420b29a9b2</Item>
+                        <Item Key="InstrumentationKey">9f7b2d6a-43cf-4d37-a0d2-dd8851ba0e91</Item>
                         <Item Key="DeveloperMode">false</Item>
                         <Item Key="DisableTelemetry ">false</Item>
                     </Metadata>
@@ -326,8 +326,8 @@
                     <DisplayName>Azure Active Directory</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ClientId">55fa7d86-8af1-4cc8-932e-094213d1c75f</Item>
-                        <Item Key="ApplicationObjectId">97b17a60-0af3-4c09-b0eb-4a24850bc22a</Item>
+                        <Item Key="ClientId">4ac4622d-c705-40e2-8032-2e5f862f114c</Item>
+                        <Item Key="ApplicationObjectId">098b6760-1ea6-451b-ad28-b34e2949359a</Item>
                     </Metadata>
                     <CryptographicKeys>
                         <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
@@ -550,7 +550,7 @@
             <SingleSignOn Scope="Tenant" />
             <SessionExpiryType>Rolling</SessionExpiryType>
             <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
-            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="4c06f918-ec06-4809-aa8c-85420b29a9b2" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="9f7b2d6a-43cf-4d37-a0d2-dd8851ba0e91" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
         </UserJourneyBehaviors>
         <TechnicalProfile Id="CDM-RP-OIDC">
             <DisplayName>CDM-RP-OIDC</DisplayName>

@@ -17,6 +17,14 @@ jobs:
             - checkout: self
 
             - task: PowerShell@2
+              displayName: 'Sync known IdP lookup for Prod'
+              inputs:
+                filePath: 'scripts/Sync-KnownIdP.ps1'
+                arguments: >
+                  -EnvironmentName "Prod"
+                  -AppSettingsFile "$(Build.SourcesDirectory)/appsettings.json"
+
+            - task: PowerShell@2
               displayName: 'Deploy policies to Prod B2C'
               inputs:
                 filePath: 'scripts/DeployEnvironmentFolderToB2C.ps1'

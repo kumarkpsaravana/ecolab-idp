@@ -1,11 +1,11 @@
 <TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="wintersnowb2c.onmicrosoft.com" PolicyId="B2C_1A_TrueView_OIDC_SignIn_dev"
-  PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn_dev" TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97" DeploymentMode="Development"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="buildoncloudb2c.onmicrosoft.com" PolicyId="B2C_1A_TrueView_OIDC_SignIn_dev"
+  PublicPolicyUri="http://buildoncloudb2c.onmicrosoft.com/B2C_1A_TrueView_OIDC_SignIn_dev" TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97" DeploymentMode="Development"
   UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
   <BasePolicy>
-    <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+    <TenantId>buildoncloudb2c.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_Connect_OIDC_SignIn_dev</PolicyId>
   </BasePolicy>
 

@@ -2,15 +2,15 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
   xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
   PolicySchemaVersion="0.3.0.0" 
-  TenantId="wintersnowb2c.onmicrosoft.com" 
+  TenantId="buildoncloudb2c.onmicrosoft.com" 
   PolicyId="B2C_1A_CDMClaims_SAML_SignIn_dev" 
-  PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_CDMClaims_SAML_SignIn_dev" 
+  PublicPolicyUri="http://buildoncloudb2c.onmicrosoft.com/B2C_1A_CDMClaims_SAML_SignIn_dev" 
   TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97" 
   DeploymentMode="Development" 
   UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
   <BasePolicy>
-    <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+    <TenantId>buildoncloudb2c.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_Connect_Extensions_dev</PolicyId>
   </BasePolicy>
 
@@ -50,7 +50,7 @@
       <SessionExpiryType>Absolute</SessionExpiryType>
       <SessionExpiryInSeconds>86400</SessionExpiryInSeconds>
 
-      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="4c06f918-ec06-4809-aa8c-85420b29a9b2" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+      <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="9f7b2d6a-43cf-4d37-a0d2-dd8851ba0e91" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
       <ScriptExecution>Allow</ScriptExecution>
     </UserJourneyBehaviors>
 

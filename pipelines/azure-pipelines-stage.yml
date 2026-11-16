@@ -8,6 +8,14 @@ pool:
 
 steps:
   - task: PowerShell@2
+    displayName: 'Sync known IdP lookup for Stage'
+    inputs:
+      filePath: 'scripts/Sync-KnownIdP.ps1'
+      arguments: >
+        -EnvironmentName "Stage"
+        -AppSettingsFile "$(Build.SourcesDirectory)/appsettings.json"
+
+  - task: PowerShell@2
     displayName: 'Deploy policies to Stage B2C'
     inputs:
       filePath: 'scripts/DeployEnvironmentFolderToB2C.ps1'

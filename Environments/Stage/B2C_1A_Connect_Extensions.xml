@@ -481,6 +481,11 @@
         <DataType>string</DataType>
       </ClaimType>
 
+      <ClaimType Id="knownIdPLookup">
+        <DisplayName>knownIdPLookup</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Set to true when the domain_hint matches a configured federation partner</UserHelpText>
+      </ClaimType>
     </ClaimsSchema>
 
     <Predicates>
@@ -824,6 +829,19 @@
         </OutputClaims>
       </ClaimsTransformation>
 
+      <ClaimsTransformation Id="LookupKnownIdP" TransformationMethod="LookupValue">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="domainHint" TransformationClaimType="inputParameterId" />
+        </InputClaims>
+        <InputParameters>
+          
+          
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="knownIdPLookup" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
     </ClaimsTransformations>
 
     <ContentDefinitions>
@@ -950,6 +968,22 @@
         <Metadata>
           <Item Key="DisplayName">Collect information from user page</Item>
         </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfAsserted.DomainHintIdPNotFoundError">
+        <LoadUri>https://stg-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Domain Hint IDP Not Found Message</Item>
+        </Metadata>
+        <LocalizedResourcesReferences MergeBehavior="Prepend">
+          <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfAsserted.DomainHintIdPNotFoundError.en" />
+          <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.selfAsserted.DomainHintIdPNotFoundError.en" />
+          <LocalizedResourcesReference Language="fr" LocalizedResourcesReferenceId="api.selfAsserted.DomainHintIdPNotFoundError.en" />
+          <LocalizedResourcesReference Language="fr-ca" LocalizedResourcesReferenceId="api.selfAsserted.DomainHintIdPNotFoundError.en" />
+          <LocalizedResourcesReference Language="bg" LocalizedResourcesReferenceId="api.selfAsserted.DomainHintIdPNotFoundError.en" />
+        </LocalizedResourcesReferences>
       </ContentDefinition>
 
     </ContentDefinitions>
@@ -1512,6 +1546,15 @@
         </LocalizedStrings>
       </LocalizedResources>
 
+      <LocalizedResources Id="api.selfAsserted.DomainHintIdPNotFoundError.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="initial_intro">Identity Provider Not Found</LocalizedString>
+          <LocalizedString ElementType="ClaimType" ElementId="ErrorDetailsMessage" StringId="DisplayName">
+            The identity provider requested for this sign-in could not be found, so sign-in cannot continue. Please return to the application and try again, or contact your IT department or your Ecolab partner.
+          </LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+
     </Localization>
 
   </BuildingBlocks>
@@ -1564,6 +1607,16 @@
             <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:DomainHint}" />
             <InputClaim ClaimTypeReferenceId="allowJit" PartnerClaimType="{property:AllowJit}" />
             <InputClaim ClaimTypeReferenceId="alignmentType" PartnerClaimType="{property:AlignmentType}" />
+          </InputClaims>
+          <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-04b-AppInsights-DomainHintIdPNotFound">
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="DomainHintIdPNotFoundError" />
+            <InputClaim ClaimTypeReferenceId="domainHint" PartnerClaimType="{property:DomainHint}" />
+            <InputClaim ClaimTypeReferenceId="appId" PartnerClaimType="{property:AppId}" />
+            <InputClaim ClaimTypeReferenceId="appEntityId" PartnerClaimType="{property:AppEntityId}" />
           </InputClaims>
           <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
         </TechnicalProfile>
@@ -1745,6 +1798,24 @@
             <OutputClaimsTransformation ReferenceId="AlignmentTypeToUpper" />
             <OutputClaimsTransformation ReferenceId="CopyDomainHintToIDP" />
             <OutputClaimsTransformation ReferenceId="GenerateSessionId" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Step-04a-Utilities-LookupKnownIdP">
+          <DisplayName>Validate domain_hint against configured identity providers</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="domainHint" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="knownIdPLookup" />
+            <OutputClaim ClaimTypeReferenceId="CorrelationId" DefaultValue="{Context:CorrelationId}" AlwaysUseDefaultValue="true" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="LookupKnownIdP" />
           </OutputClaimsTransformations>
         </TechnicalProfile>
 
@@ -2227,6 +2298,31 @@
           <IncludeTechnicalProfile ReferenceId="AAD-Common" />
         </TechnicalProfile>
 
+        <TechnicalProfile Id="Step-04c-UserInteraction-DomainHintIdPNotFoundError">
+          <DisplayName>Domain Hint IDP Not Found Error</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfAsserted.DomainHintIdPNotFoundError</Item>
+            <Item Key="setting.showContinueButton">false</Item>
+            <Item Key="setting.showCancelButton">false</Item>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+          </Metadata>
+          <!-- preAuthIDP holds the domain_hint value (copied in Step-03) -->
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_PreAuthIDP" />
+            <InputClaimsTransformation ReferenceId="CreateErrorDetailsMessage_CorrelationId" />
+          </InputClaimsTransformations>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+            <InputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_PreAuthIDP" />
+            <OutputClaim ClaimTypeReferenceId="ErrorDetailsMessage_CorrelationId" />
+          </OutputClaims>
+        </TechnicalProfile>
+
         <TechnicalProfile Id="Step-18-UserInteraction-FedIdMismatchError">
           <DisplayName>Error message</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -2403,6 +2499,76 @@
               <Value>objectIdFromSession</Value>
               <Action>SkipThisOrchestrationStep</Action>
             </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <!-- skip if no domain_hint was passed -->
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LookupKnownIdP" TechnicalProfileReferenceId="Step-04a-Utilities-LookupKnownIdP" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <!-- skip if no domain_hint was passed -->
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <!-- skip if the domain_hint matched a configured identity provider -->
+              <Value>knownIdPLookup</Value>
+              <Value>true</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="TrackDomainHintIdPNotFound" TechnicalProfileReferenceId="Step-04b-AppInsights-DomainHintIdPNotFound" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <!-- skip if no domain_hint was passed -->
+              <Value>domainHintIsEmpty</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <!-- skip if the domain_hint matched a configured identity provider -->
+              <Value>knownIdPLookup</Value>
+              <Value>true</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ShowDomainHintIdPNotFoundError" TechnicalProfileReferenceId="Step-04c-UserInteraction-DomainHintIdPNotFoundError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Ask user for email if it was not passed on the query string or from pre-existing session -->
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <!-- skip if pre-existing session -->
+              <Value>objectIdFromSession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
               <!-- skip if signInName was passed -->
               <Value>signInName</Value>
@@ -2430,7 +2596,7 @@
           - We need to make sure that the user either has "extension_isFederated" = True or "extension_isLocal" = True in this step, or throw an error
           - if we implement a domain hint here, then we would want to set "extension_isFederated" to True manually (among other things)
         -->
-        <OrchestrationStep Order="6" Type="ClaimsExchange">
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <!-- skip if pre-existing session -->
@@ -2450,7 +2616,7 @@
 
         <!-- TODO: track as domain hint request? -->
 
-        <OrchestrationStep Order="7" Type="ClaimsExchange">
+        <OrchestrationStep Order="10" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="TrackUserSignInRequest" TechnicalProfileReferenceId="Step-07-AppInsights-UserSignInRequest" />
           </ClaimsExchanges>
@@ -2458,7 +2624,7 @@
 
         <!-- TODO: find out if this step is even needed. it actually has nothing to do with domain hint -->
         <!-- parse off domain suffix to use as a trigger for someone eligible to convert -->
-        <OrchestrationStep Order="8" Type="ClaimsExchange">
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>objectIdFromSession</Value>
@@ -2483,7 +2649,7 @@
 
         <!-- TODO: Domain hint won't have _isFederated or _isLocal, so we need some other way. right now local gets skipped by default because the read step never happens and extension_isLocal is null -->
         <!-- TODO: We need to make sure that by this point, everyone who is local has "extension_isLocal" or "extension_isFederated" set to True -->
-        <OrchestrationStep Order="9" Type="InvokeSubJourney">
+        <OrchestrationStep Order="12" Type="InvokeSubJourney">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <!-- skip if pre-existing session -->
@@ -2508,7 +2674,7 @@
         </OrchestrationStep>
 
         <!-- TODO: again, we need a more reliable way of making sure this step runs for domainhint -->
-        <OrchestrationStep Order="10" Type="InvokeSubJourney">
+        <OrchestrationStep Order="13" Type="InvokeSubJourney">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <!-- skip if pre-existing session -->
@@ -2529,20 +2695,20 @@
 
 
         <!-- always read the user to get stored claims -->
-        <OrchestrationStep Order="11" Type="ClaimsExchange">
+        <OrchestrationStep Order="14" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="Step-10-AAD-UserReadUsingObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <OrchestrationStep Order="12" Type="InvokeSubJourney">
+        <OrchestrationStep Order="15" Type="InvokeSubJourney">
           <JourneyList>
             <Candidate SubJourneyReferenceId="SubJourney-3-PostSignInAPICalls" />
           </JourneyList>
         </OrchestrationStep>
 
         <!-- Display Terms of Use consent page for any SignIn scenario based on extension_termsOfUseRequired claim -->
-        <OrchestrationStep Order="13" Type="ClaimsExchange">
+        <OrchestrationStep Order="16" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
               <Value>extension_termsOfUseRequired</Value>
@@ -2566,7 +2732,7 @@
 
         <!--Process
         Terms of Use consent for any User and write the Version claims -->
-        <OrchestrationStep Order="14" Type="ClaimsExchange">
+        <OrchestrationStep Order="17" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
               <Value>extension_termsOfUseRequired</Value>
@@ -2590,7 +2756,7 @@
 
         <!--Process
         Terms of Use consent for any User and write the Version claims -->
-        <OrchestrationStep Order="15" Type="ClaimsExchange">
+        <OrchestrationStep Order="18" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="UpdateLastLogin" TechnicalProfileReferenceId="Step-15-Update-Last-Login" />
           </ClaimsExchanges>
@@ -2598,7 +2764,7 @@
 
         <!--Process
         Terms of Use consent for any User and write the Version claims -->
-        <OrchestrationStep Order="16" Type="ClaimsExchange">
+        <OrchestrationStep Order="19" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <!-- skip if pre-existing session -->
@@ -2621,7 +2787,7 @@
         </OrchestrationStep>
 
         <!-- final step before issuing the token, we write to the session -->
-        <OrchestrationStep Order="17" Type="ClaimsExchange">
+        <OrchestrationStep Order="20" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="SaveClaimsToSession" TechnicalProfileReferenceId="Step-17-Utilities-SaveClaimsToSession" />
           </ClaimsExchanges>
@@ -2630,7 +2796,7 @@
         <!-- <OrchestrationStep Order="18" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-JwtIssuer" /> -->
 
         <!-- I want to make this a subjourney instead since that will prevent needing to set a step in RP files (which causes issues because of azure sync times -->
-        <OrchestrationStep Order="18" Type="InvokeSubJourney">
+        <OrchestrationStep Order="21" Type="InvokeSubJourney">
           <JourneyList>
             <Candidate SubJourneyReferenceId="SubJourney-Final-IssueToken" />
           </JourneyList>
@@ -2641,7 +2807,7 @@
         Per a comment on this page: https://medium.com/the-new-control-plane/exploring-subjourneys-in-azure-ad-b2c-91362640bd52
           We need to specify a SendClaims in both the subjourney and the main journey, then supply  aDefaultCpimIssuerTechnicalProfileReferenceId
         -->
-        <OrchestrationStep Order="19" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-JwtIssuer" />
+        <OrchestrationStep Order="22" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Step-33-TokenIssuer-JwtIssuer" />
 
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />

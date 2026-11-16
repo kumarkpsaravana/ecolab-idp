@@ -8,6 +8,14 @@ pool:
 
 steps:
   - task: PowerShell@2
+    displayName: 'Sync known IdP lookup for Dev'
+    inputs:
+      filePath: 'scripts/Sync-KnownIdP.ps1'
+      arguments: >
+        -EnvironmentName "Dev"
+        -AppSettingsFile "$(Build.SourcesDirectory)/appsettings.json"
+
+  - task: PowerShell@2
     displayName: 'Deploy policies to Dev B2C'
     inputs:
       filePath: 'scripts/DeployEnvironmentFolderToB2C.ps1'

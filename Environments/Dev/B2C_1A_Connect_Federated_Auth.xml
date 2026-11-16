@@ -2,15 +2,15 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
     PolicySchemaVersion="0.3.0.0"
-    TenantId="wintersnowb2c.onmicrosoft.com"
+    TenantId="buildoncloudb2c.onmicrosoft.com"
     PolicyId="B2C_1A_Connect_Federated_Auth_dev"
-    PublicPolicyUri="http://wintersnowb2c.onmicrosoft.com/B2C_1A_Connect_Federated_Auth_dev"
+    PublicPolicyUri="http://buildoncloudb2c.onmicrosoft.com/B2C_1A_Connect_Federated_Auth_dev"
     TenantObjectId="6702c739-6f3d-4a29-be7f-ee826c351d97"
     DeploymentMode="Development"
     UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
     <BasePolicy>
-        <TenantId>wintersnowb2c.onmicrosoft.com</TenantId>
+        <TenantId>buildoncloudb2c.onmicrosoft.com</TenantId>
         <PolicyId>B2C_1A_Connect_Federations_dev</PolicyId>
     </BasePolicy>
 
@@ -360,7 +360,7 @@
 
         <ContentDefinitions>
             <ContentDefinition Id="api.error">
-                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <LoadUri>https://storageaccountdevrgab6d.blob.core.windows.net/test/hrd/uiassets/error-page.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
                 <DataUri>urn:com:microsoft:aad:b2c:elements:globalexception:1.1.0</DataUri>
                 <Metadata>
@@ -369,7 +369,7 @@
             </ContentDefinition>
 
             <ContentDefinition Id="api.selfAsserted.UserNotFoundError">
-                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <LoadUri>https://storageaccountdevrgab6d.blob.core.windows.net/test/hrd/uiassets/error-page.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
                 <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
                 <Metadata>
@@ -381,7 +381,7 @@
             </ContentDefinition>
 
             <ContentDefinition Id="api.selfAsserted.UserMismatchError">
-                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <LoadUri>https://storageaccountdevrgab6d.blob.core.windows.net/test/hrd/uiassets/error-page.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
                 <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
                 <Metadata>
@@ -393,7 +393,7 @@
             </ContentDefinition>
 
             <ContentDefinition Id="api.selfAsserted.IDPMismatchError">
-                <LoadUri>https://dev-b2cassets.ecolab.com/hrd/uiassets/error-page.html</LoadUri>
+                <LoadUri>https://storageaccountdevrgab6d.blob.core.windows.net/test/hrd/uiassets/error-page.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
                 <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
                 <Metadata>
@@ -448,7 +448,7 @@
                     <DisplayName>Application Insights</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="InstrumentationKey">4c06f918-ec06-4809-aa8c-85420b29a9b2</Item>
+                        <Item Key="InstrumentationKey">9f7b2d6a-43cf-4d37-a0d2-dd8851ba0e91</Item>
                         <Item Key="DeveloperMode">false</Item>
                         <Item Key="DisableTelemetry ">false</Item>
                     </Metadata>

@@ -116,7 +116,21 @@ It auto-detects the next federation partner number, generates the technical prof
 
 In VS Code with the IEF extension, run **Build All Policies**. This resolves the `{Settings:...}` placeholders and outputs the environment-specific files to `Environments/`.
 
-### 3. Deploy to stage
+### 3. Sync the known IdP lookup before manual upload
+
+After building the policies, run the sync for the environment you plan to upload. This updates that environment's `B2C_1A_Connect_Extensions.xml` using its federation policy and the corresponding `PolicySettings` in the root `appsettings.json`:
+
+```powershell
+./scripts/Sync-KnownIdP.ps1 -EnvironmentName Dev
+./scripts/Sync-KnownIdP.ps1 -EnvironmentName Stage
+./scripts/Sync-KnownIdP.ps1 -EnvironmentName Prod
+```
+
+Run only the command for the target environment, then review the `LookupKnownIdP` diff in `Environments/<Environment>/B2C_1A_Connect_Extensions.xml` before manually uploading policies. The environment name is required so the script cannot accidentally update the root template instead of the policy files being uploaded.
+
+The Dev, Stage, and Prod deployment pipelines run the sync automatically before deploying, so this manual step is needed only when uploading policies outside the pipelines. If a referenced setting is missing for an environment, the script warns and omits that domain.
+
+### 4. Deploy to stage
 
 Commit and push to the `stage` branch. The stage pipeline automatically deploys all policies to the wintersnowb2c tenant.
 
@@ -127,11 +141,11 @@ git commit -m "Add federation: Kraft (SAML)"
 git push
 ```
 
-### 4. Test
+### 5. Test
 
 Work with the federation partner to test the sign-in flow in the stage environment.
 
-### 5. Promote to prod
+### 6. Promote to prod
 
 When the federation partner provides prod metadata and testing is complete:
 
